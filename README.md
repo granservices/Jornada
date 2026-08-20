@@ -26,11 +26,14 @@ Ele concentra:
 ## Comandos principais
 
 ```bash
+npm run infra:up
 npm run dev:api
 npm run build:api
 npm run test:api
 npm run test:api:cov
 ```
+
+`npm run infra:up` procura a primeira porta livre a partir de `5434`, atualiza o `DATABASE_URL` local da API e sobe apenas `postgres` e `redis`.
 
 ## Docker Compose
 

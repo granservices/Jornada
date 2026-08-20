@@ -7,6 +7,7 @@
     "apps/*"
   ],
   "scripts": {
+    "infra:up": "powershell -ExecutionPolicy Bypass -File ./scripts/start-local-infra.ps1",
     "dev:api": "npm run start:dev --workspace @jornada/api",
     "build:api": "npm run build --workspace @jornada/api",
     "lint:api": "npm run lint --workspace @jornada/api",
