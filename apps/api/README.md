@@ -49,6 +49,10 @@ WEBHOOK_STORAGE_DIR=./data/webhooks
 DRAKE_WEBHOOK_QUEUE_ENABLED=true
 DRAKE_WEBHOOK_QUEUE_ATTEMPTS=5
 DRAKE_WEBHOOK_QUEUE_BACKOFF_MS=5000
+ADMIN_BOOTSTRAP_ENABLED=false
+ADMIN_BOOTSTRAP_EMAIL=admin@granservices.com.br
+ADMIN_BOOTSTRAP_PASSWORD=replace-with-a-strong-admin-password
+ADMIN_BOOTSTRAP_FULL_NAME=Administrador Jornada
 ```
 
 ## Execucao local
@@ -87,3 +91,4 @@ O Swagger local fica em `http://localhost:3004/api/docs`.
 - payload bruto ainda salvo em arquivo para auditoria inicial
 - fila BullMQ com Redis para processamento assincrono
 - retries exponenciais e marcacao de falha final no inbox
+- bootstrap opcional de conta admin por `env`

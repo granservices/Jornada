@@ -29,12 +29,24 @@ Paleta inicial recomendada:
 - `text-primary`: `#111827`
 - `text-secondary`: `#4b5563`
 - `text-muted`: `#6b7280`
-- `brand-red`: `#c7352c`
-- `brand-red-strong`: `#a92f27`
+- `brand-red`: `#c50000`
+- `brand-red-strong`: `#890000`
+- `brand-red-bright`: `#fd0000`
 - `warning`: `#b45309`
 - `critical`: `#b42318`
 
 O dark mode pode entrar depois, mas nao como tema principal do MVP.
+
+## Motion direction
+
+Animacao recomendada para a base:
+
+- `motion` com transicoes curtas de entrada
+- hover de 1px ou microescala
+- nada de animacao continua pesada
+- icones animados apenas em pontos de foco, nao como ornamento constante
+
+`animate-ui` pode entrar depois para componentes mais refinados, mas a base inicial nao precisa depender disso para ficar boa.
 
 ## Chosen UI foundation
 

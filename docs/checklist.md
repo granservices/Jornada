@@ -64,6 +64,7 @@
 - [x] Endurecer fluxo de recuperacao de senha
 - [ ] Definir verificacao de email e onboarding inicial
 - [ ] Consolidar endurecimento avancado da autenticacao
+- [x] Definir bootstrap seguro de admin
 - [x] Definir UX mobile-first
 - [ ] Definir estrategia PWA
 - [ ] Definir estrategia offline parcial

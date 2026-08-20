@@ -9,7 +9,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg'],
+      includeAssets: ['crew-logo.ico', 'crew-logo.png'],
       manifest: {
         name: 'Jornada',
         short_name: 'Jornada',
@@ -20,16 +20,10 @@ export default defineConfig({
         start_url: '/',
         icons: [
           {
-            src: 'pwa-icon.svg',
-            sizes: 'any',
-            type: 'image/svg+xml',
-            purpose: 'any',
-          },
-          {
-            src: 'pwa-icon.svg',
-            sizes: 'any',
-            type: 'image/svg+xml',
-            purpose: 'maskable',
+            src: 'crew-logo.png',
+            sizes: '63x63',
+            type: 'image/png',
+            purpose: 'any maskable',
           },
         ],
       },

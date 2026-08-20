@@ -36,4 +36,8 @@ export const envValidationSchema = Joi.object({
     .integer()
     .positive()
     .default(5000),
+  ADMIN_BOOTSTRAP_ENABLED: Joi.boolean().default(false),
+  ADMIN_BOOTSTRAP_EMAIL: Joi.string().email().optional(),
+  ADMIN_BOOTSTRAP_PASSWORD: Joi.string().min(12).optional(),
+  ADMIN_BOOTSTRAP_FULL_NAME: Joi.string().default('Administrador Jornada'),
 });

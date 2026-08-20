@@ -15,11 +15,12 @@
   --text-muted: #6b7280;
   --border-soft: rgba(109, 118, 128, 0.18);
   --border-strong: rgba(109, 118, 128, 0.34);
-  --brand-600: #c7352c;
-  --brand-700: #a92f27;
-  --brand-800: #86261f;
-  --brand-shadow: rgba(199, 53, 44, 0.28);
-  --focus-ring: rgba(199, 53, 44, 0.22);
+  --brand-500: #fd0000;
+  --brand-600: #c50000;
+  --brand-700: #890000;
+  --brand-800: #640000;
+  --brand-shadow: rgba(197, 0, 0, 0.24);
+  --focus-ring: rgba(197, 0, 0, 0.18);
   --warning-700: #b45309;
   --danger-600: #b42318;
   --danger-700: #912018;
