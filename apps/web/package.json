@@ -1,0 +1,6 @@
+{
+  "name": "@jornada/web",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Shell futuro do frontend PWA do Jornada."
+}

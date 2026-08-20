@@ -1,0 +1,54 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: jornada-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: jornada
+      POSTGRES_USER: jornada
+      POSTGRES_PASSWORD: jornada
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:8-alpine
+    container_name: jornada-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: jornada-api
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+    env_file:
+      - ./apps/api/.env
+    environment:
+      NODE_ENV: development
+      PORT: 3004
+      DATABASE_URL: postgresql://jornada:jornada@postgres:5432/jornada?schema=public
+      REDIS_URL: redis://redis:6379
+      WEBHOOK_STORAGE_DIR: /app/data/webhooks
+    ports:
+      - "3004:3004"
+    volumes:
+      - ./apps/api/data/webhooks:/app/data/webhooks
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:3004/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 25s
+
+volumes:
+  postgres_data:
+  redis_data:

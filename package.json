@@ -1,0 +1,19 @@
+{
+  "name": "jornada-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Monorepo do Jornada, plataforma operacional mobile-first da Gran Services.",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev:api": "npm run start:dev --workspace @jornada/api",
+    "build:api": "npm run build --workspace @jornada/api",
+    "lint:api": "npm run lint --workspace @jornada/api",
+    "test:api": "npm run test --workspace @jornada/api",
+    "test:api:cov": "npm run test:cov --workspace @jornada/api",
+    "test:api:e2e": "npm run test:e2e --workspace @jornada/api",
+    "prisma:generate": "npm run prisma:generate --workspace @jornada/api",
+    "prisma:migrate:dev": "npm run prisma:migrate:dev --workspace @jornada/api"
+  }
+}
