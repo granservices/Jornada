@@ -8,6 +8,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import type { Request } from 'express';
+import { getRequestContext } from '../../common/http/request-context';
 import { AuthService } from './auth.service';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { LoginDto } from './dto/login.dto';
@@ -30,10 +31,10 @@ export class AuthController {
     @Ip() ipAddress: string,
     @Req() request: Request,
   ) {
-    return this.authService.register(dto, {
-      ipAddress,
-      userAgent: request.headers['user-agent'],
-    });
+    return this.authService.register(
+      dto,
+      getRequestContext(request as Request & { id?: string }, ipAddress),
+    );
   }
 
   @Post('login')
@@ -46,10 +47,10 @@ export class AuthController {
     @Ip() ipAddress: string,
     @Req() request: Request,
   ) {
-    return this.authService.login(dto, {
-      ipAddress,
-      userAgent: request.headers['user-agent'],
-    });
+    return this.authService.login(
+      dto,
+      getRequestContext(request as Request & { id?: string }, ipAddress),
+    );
   }
 
   @Post('refresh')
@@ -61,18 +62,25 @@ export class AuthController {
     @Ip() ipAddress: string,
     @Req() request: Request,
   ) {
-    return this.authService.refresh(dto, {
-      ipAddress,
-      userAgent: request.headers['user-agent'],
-    });
+    return this.authService.refresh(
+      dto,
+      getRequestContext(request as Request & { id?: string }, ipAddress),
+    );
   }
 
   @Post('logout')
   @HttpCode(200)
   @ApiOperation({ summary: 'Revoga a sessao associada ao refresh token.' })
   @ApiOkResponse({ description: 'Logout realizado com sucesso.' })
-  logout(@Body() dto: LogoutDto) {
-    return this.authService.logout(dto);
+  logout(
+    @Body() dto: LogoutDto,
+    @Ip() ipAddress: string,
+    @Req() request: Request,
+  ) {
+    return this.authService.logout(
+      dto,
+      getRequestContext(request as Request & { id?: string }, ipAddress),
+    );
   }
 
   @Post('forgot-password')
@@ -80,8 +88,15 @@ export class AuthController {
   @Throttle({ default: { limit: 3, ttl: 300_000 } })
   @ApiOperation({ summary: 'Solicita redefinicao de senha.' })
   @ApiAcceptedResponse({ description: 'Solicitacao recebida.' })
-  forgotPassword(@Body() dto: ForgotPasswordDto) {
-    return this.authService.forgotPassword(dto);
+  forgotPassword(
+    @Body() dto: ForgotPasswordDto,
+    @Ip() ipAddress: string,
+    @Req() request: Request,
+  ) {
+    return this.authService.forgotPassword(
+      dto,
+      getRequestContext(request as Request & { id?: string }, ipAddress),
+    );
   }
 
   @Post('reset-password')
@@ -91,7 +106,14 @@ export class AuthController {
     summary: 'Redefine a senha a partir do token de recuperacao.',
   })
   @ApiOkResponse({ description: 'Senha redefinida com sucesso.' })
-  resetPassword(@Body() dto: ResetPasswordDto) {
-    return this.authService.resetPassword(dto);
+  resetPassword(
+    @Body() dto: ResetPasswordDto,
+    @Ip() ipAddress: string,
+    @Req() request: Request,
+  ) {
+    return this.authService.resetPassword(
+      dto,
+      getRequestContext(request as Request & { id?: string }, ipAddress),
+    );
   }
 }

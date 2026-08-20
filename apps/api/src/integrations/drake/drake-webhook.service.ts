@@ -1,6 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { HttpRequestContext } from '../../common/http/request-context';
 import { DrakeWebhookStorageService } from './drake-webhook-storage.service';
-import { DrakeWebhookReceipt, DrakeWebhookType } from './drake.types';
+import {
+  DrakeWebhookMetadata,
+  DrakeWebhookReceipt,
+  DrakeWebhookType,
+} from './drake.types';
 
 @Injectable()
 export class DrakeWebhookService {
@@ -11,9 +16,10 @@ export class DrakeWebhookService {
   async receive(
     webhookType: DrakeWebhookType,
     payload: Record<string, unknown>,
+    context: HttpRequestContext,
   ): Promise<DrakeWebhookReceipt> {
     const receivedAt = new Date().toISOString();
-    const metadata = {
+    const baseMetadata = {
       eventName: this.readString(payload, ['event', 'eventName', 'type']),
       eventId: this.readString(payload, ['eventId', 'id', 'codigoEvento']),
       employeeId: this.readString(payload, [
@@ -22,24 +28,50 @@ export class DrakeWebhookService {
         'matricula',
       ]),
       receivedAt,
+      requestId: context.requestId,
     };
 
-    const storagePath = await this.storageService.persist(
+    const metadata: DrakeWebhookMetadata = {
+      ...baseMetadata,
+      correlationId: this.storageService.buildCorrelationId(
+        webhookType,
+        baseMetadata,
+      ),
+      idempotencyKey: this.storageService.buildIdempotencyKey(
+        webhookType,
+        payload,
+        baseMetadata,
+      ),
+    };
+
+    const { duplicate, storagePath } = await this.storageService.persist({
       webhookType,
       payload,
       metadata,
-    );
+    });
 
-    this.logger.log(
-      `Webhook ${webhookType} received and stored at ${storagePath}`,
-    );
+    if (duplicate) {
+      this.logger.warn(
+        `Duplicate Drake webhook ignored for ${webhookType} with idempotency key ${metadata.idempotencyKey}`,
+      );
+    } else {
+      this.logger.log(
+        `Webhook ${webhookType} received and stored at ${storagePath} with correlation ${metadata.correlationId}`,
+      );
+    }
 
     return {
       ok: true,
-      message: `${webhookType} webhook received successfully.`,
+      message: duplicate
+        ? `${webhookType} webhook already received.`
+        : `${webhookType} webhook received successfully.`,
       webhookType,
       receivedAt,
-      stored: true,
+      stored: !duplicate,
+      duplicate,
+      requestId: metadata.requestId,
+      correlationId: metadata.correlationId,
+      idempotencyKey: metadata.idempotencyKey,
     };
   }
 

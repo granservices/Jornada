@@ -6,5 +6,19 @@ export type DrakeWebhookReceipt = {
   message: string;
   webhookType: DrakeWebhookType;
   receivedAt: string;
-  stored: true;
+  stored: boolean;
+  duplicate: boolean;
+  requestId?: string;
+  correlationId: string;
+  idempotencyKey: string;
+};
+
+export type DrakeWebhookMetadata = {
+  eventName: string | null;
+  eventId: string | null;
+  employeeId: string | null;
+  receivedAt: string;
+  requestId?: string;
+  correlationId: string;
+  idempotencyKey: string;
 };

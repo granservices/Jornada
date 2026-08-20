@@ -76,3 +76,18 @@ Todo bug importante deve poder ser:
 2. observado por log
 3. rastreado por correlacao
 
+## Current baseline on August 20, 2026
+
+Ja validado na base atual:
+
+- `lint` do backend
+- testes unitarios do `auth`
+- teste `e2e` de `health`
+- `build` do `NestJS`
+
+O proximo passo natural e adicionar cenarios `e2e` para:
+
+- `login`
+- `refresh`
+- `forgot-password`
+- `reset-password`

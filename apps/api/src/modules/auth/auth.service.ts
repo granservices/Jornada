@@ -2,12 +2,14 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Role, UserStatus } from '@prisma/client';
 import ms from 'ms';
 import type { StringValue } from 'ms';
+import { HttpRequestContext } from '../../common/http/request-context';
 import { PrismaService } from '../../database/prisma.service';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { LoginDto } from './dto/login.dto';
@@ -15,13 +17,9 @@ import { LogoutDto } from './dto/logout.dto';
 import { RefreshSessionDto } from './dto/refresh-session.dto';
 import { RegisterDto } from './dto/register.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { AuthAuditService } from './services/auth-audit.service';
 import { AuthTokenService } from './services/auth-token.service';
 import { PasswordHasherService } from './services/password-hasher.service';
-
-type SessionMeta = {
-  ipAddress?: string;
-  userAgent?: string | string[];
-};
 
 type PublicUser = {
   id: string;
@@ -32,16 +30,28 @@ type PublicUser = {
   emailVerifiedAt: Date | null;
 };
 
+const AUTH_AUDIT_EVENT = {
+  REGISTER: 'REGISTER',
+  LOGIN: 'LOGIN',
+  REFRESH: 'REFRESH',
+  LOGOUT: 'LOGOUT',
+  FORGOT_PASSWORD: 'FORGOT_PASSWORD',
+  RESET_PASSWORD: 'RESET_PASSWORD',
+} as const;
+
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly passwordHasher: PasswordHasherService,
     private readonly authTokenService: AuthTokenService,
+    private readonly authAuditService: AuthAuditService,
     private readonly configService: ConfigService,
   ) {}
 
-  async register(dto: RegisterDto, meta: SessionMeta) {
+  async register(dto: RegisterDto, meta: HttpRequestContext) {
     const email = this.normalizeEmail(dto.email);
     const existingUser = await this.prisma.user.findUnique({
       where: { email },
@@ -49,6 +59,12 @@ export class AuthService {
     });
 
     if (existingUser) {
+      await this.authAuditService.failure(AUTH_AUDIT_EVENT.REGISTER, {
+        email,
+        reason: 'email-already-registered',
+        ...this.toAuditContext(meta),
+      });
+
       throw new ConflictException('Ja existe uma conta para este email.');
     }
 
@@ -62,18 +78,35 @@ export class AuthService {
       },
     });
 
+    await this.authAuditService.success(AUTH_AUDIT_EVENT.REGISTER, {
+      ...this.authAuditService.fromUser(user),
+      ...this.toAuditContext(meta),
+    });
+
     return this.issueSession(user, meta);
   }
 
-  async login(dto: LoginDto, meta: SessionMeta) {
+  async login(dto: LoginDto, meta: HttpRequestContext) {
     const email = this.normalizeEmail(dto.email);
     const user = await this.prisma.user.findUnique({ where: { email } });
 
     if (!user) {
+      await this.authAuditService.failure(AUTH_AUDIT_EVENT.LOGIN, {
+        email,
+        reason: 'user-not-found',
+        ...this.toAuditContext(meta),
+      });
+
       throw new UnauthorizedException('Credenciais invalidas.');
     }
 
     if (user.status !== UserStatus.ACTIVE) {
+      await this.authAuditService.failure(AUTH_AUDIT_EVENT.LOGIN, {
+        ...this.authAuditService.fromUser(user),
+        reason: `user-status-${user.status.toLowerCase()}`,
+        ...this.toAuditContext(meta),
+      });
+
       throw new UnauthorizedException('Conta indisponivel para login.');
     }
 
@@ -83,6 +116,12 @@ export class AuthService {
     );
 
     if (!isPasswordValid) {
+      await this.authAuditService.failure(AUTH_AUDIT_EVENT.LOGIN, {
+        ...this.authAuditService.fromUser(user),
+        reason: 'invalid-password',
+        ...this.toAuditContext(meta),
+      });
+
       throw new UnauthorizedException('Credenciais invalidas.');
     }
 
@@ -91,16 +130,27 @@ export class AuthService {
       data: { lastLoginAt: new Date() },
     });
 
+    await this.authAuditService.success(AUTH_AUDIT_EVENT.LOGIN, {
+      ...this.authAuditService.fromUser(user),
+      ...this.toAuditContext(meta),
+    });
+
     return this.issueSession(user, meta);
   }
 
-  async refresh(dto: RefreshSessionDto, meta: SessionMeta) {
+  async refresh(dto: RefreshSessionDto, meta: HttpRequestContext) {
     const session = await this.resolveValidSession(dto.refreshToken);
     const user = await this.prisma.user.findUnique({
       where: { id: session.userId },
     });
 
     if (!user || user.status !== UserStatus.ACTIVE) {
+      await this.authAuditService.failure(AUTH_AUDIT_EVENT.REFRESH, {
+        userId: session.userId,
+        reason: 'user-not-active-for-refresh',
+        ...this.toAuditContext(meta),
+      });
+
       throw new UnauthorizedException('Sessao invalida.');
     }
 
@@ -119,11 +169,20 @@ export class AuthService {
       },
     });
 
+    await this.authAuditService.success(AUTH_AUDIT_EVENT.REFRESH, {
+      ...this.authAuditService.fromUser(user),
+      ...this.toAuditContext(meta),
+    });
+
     return this.buildAuthResponse(user, session.id, nextRefreshTokenSecret);
   }
 
-  async logout(dto: LogoutDto) {
+  async logout(dto: LogoutDto, meta: HttpRequestContext) {
     const { sessionId } = this.parseRefreshToken(dto.refreshToken);
+    const currentSession = await this.prisma.authSession.findUnique({
+      where: { id: sessionId },
+      include: { user: true },
+    });
 
     await this.prisma.authSession.updateMany({
       where: {
@@ -136,20 +195,32 @@ export class AuthService {
       },
     });
 
+    await this.authAuditService.success(AUTH_AUDIT_EVENT.LOGOUT, {
+      ...this.authAuditService.fromUser(currentSession?.user),
+      ...this.toAuditContext(meta),
+    });
+
     return {
       ok: true,
       message: 'Sessao encerrada com sucesso.',
     };
   }
 
-  async forgotPassword(dto: ForgotPasswordDto) {
+  async forgotPassword(dto: ForgotPasswordDto, meta: HttpRequestContext) {
     const email = this.normalizeEmail(dto.email);
     const user = await this.prisma.user.findUnique({ where: { email } });
 
     if (!user) {
+      await this.authAuditService.failure(AUTH_AUDIT_EVENT.FORGOT_PASSWORD, {
+        email,
+        reason: 'user-not-found',
+        ...this.toAuditContext(meta),
+      });
+
       return this.buildForgotPasswordResponse();
     }
 
+    const now = new Date();
     const resetToken = this.authTokenService.generateOpaqueToken();
     const tokenHash = await this.passwordHasher.hash(resetToken);
     const expiresAt = new Date(
@@ -160,18 +231,37 @@ export class AuthService {
           60_000,
     );
 
-    await this.prisma.passwordResetToken.create({
-      data: {
-        userId: user.id,
-        tokenHash,
-        expiresAt,
-      },
+    await this.prisma.$transaction([
+      this.prisma.passwordResetToken.updateMany({
+        where: {
+          userId: user.id,
+          consumedAt: null,
+          expiresAt: {
+            gt: now,
+          },
+        },
+        data: {
+          consumedAt: now,
+        },
+      }),
+      this.prisma.passwordResetToken.create({
+        data: {
+          userId: user.id,
+          tokenHash,
+          expiresAt,
+        },
+      }),
+    ]);
+
+    await this.authAuditService.success(AUTH_AUDIT_EVENT.FORGOT_PASSWORD, {
+      ...this.authAuditService.fromUser(user),
+      ...this.toAuditContext(meta),
     });
 
     return this.buildForgotPasswordResponse(resetToken);
   }
 
-  async resetPassword(dto: ResetPasswordDto) {
+  async resetPassword(dto: ResetPasswordDto, meta: HttpRequestContext) {
     const resetEntries = await this.prisma.passwordResetToken.findMany({
       where: {
         consumedAt: null,
@@ -193,6 +283,11 @@ export class AuthService {
     );
 
     if (!matchedEntry) {
+      await this.authAuditService.failure(AUTH_AUDIT_EVENT.RESET_PASSWORD, {
+        reason: 'invalid-or-expired-reset-token',
+        ...this.toAuditContext(meta),
+      });
+
       throw new BadRequestException(
         'Token de redefinicao invalido ou expirado.',
       );
@@ -222,6 +317,12 @@ export class AuthService {
       }),
     ]);
 
+    await this.authAuditService.success(AUTH_AUDIT_EVENT.RESET_PASSWORD, {
+      ...this.authAuditService.fromUser(matchedEntry.user),
+      reason: 'password-reset-completed',
+      ...this.toAuditContext(meta),
+    });
+
     return {
       ok: true,
       message: 'Senha redefinida com sucesso.',
@@ -230,7 +331,7 @@ export class AuthService {
 
   private async issueSession(
     user: PublicUser & { passwordHash?: string },
-    meta: SessionMeta,
+    meta: HttpRequestContext,
   ) {
     const refreshTokenSecret = this.authTokenService.generateOpaqueToken();
     const session = await this.prisma.authSession.create({
@@ -324,6 +425,12 @@ export class AuthService {
   }
 
   private buildForgotPasswordResponse(previewToken?: string) {
+    if (previewToken && process.env.NODE_ENV !== 'production') {
+      this.logger.debug(
+        'Password reset preview token generated for non-production environment.',
+      );
+    }
+
     return {
       ok: true,
       message:
@@ -359,7 +466,7 @@ export class AuthService {
     return email.trim().toLowerCase();
   }
 
-  private stringifyUserAgent(userAgent?: string | string[]) {
+  private stringifyUserAgent(userAgent?: string | string[] | null) {
     if (!userAgent) {
       return null;
     }
@@ -377,6 +484,14 @@ export class AuthService {
       roles: user.roles,
       status: user.status,
       emailVerifiedAt: user.emailVerifiedAt,
+    };
+  }
+
+  private toAuditContext(meta: HttpRequestContext) {
+    return {
+      requestId: meta.requestId,
+      ipAddress: meta.ipAddress,
+      userAgent: this.stringifyUserAgent(meta.userAgent),
     };
   }
 }

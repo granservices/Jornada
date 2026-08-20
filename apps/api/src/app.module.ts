@@ -4,6 +4,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import type { StringValue } from 'ms';
+import { AppLoggingModule } from './common/logging/logging.module';
 import { envValidationSchema } from './config/env.validation';
 import { PrismaModule } from './database/prisma.module';
 import { HealthModule } from './health/health.module';
@@ -17,6 +18,7 @@ import { AuthModule } from './modules/auth/auth.module';
       envFilePath: ['.env.local', '.env'],
       validationSchema: envValidationSchema,
     }),
+    AppLoggingModule,
     ThrottlerModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => [

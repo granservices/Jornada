@@ -2,7 +2,9 @@ import { ConflictException, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Role, UserStatus } from '@prisma/client';
 import type { PrismaService } from '../../database/prisma.service';
+import type { HttpRequestContext } from '../../common/http/request-context';
 import { AuthService } from './auth.service';
+import type { AuthAuditService } from './services/auth-audit.service';
 import type { AuthTokenService } from './services/auth-token.service';
 
 describe('AuthService', () => {
@@ -33,6 +35,11 @@ describe('AuthService', () => {
   let authTokenService: {
     signAccessToken: jest.Mock;
     generateOpaqueToken: jest.Mock;
+  };
+  let authAuditService: {
+    success: jest.Mock;
+    failure: jest.Mock;
+    fromUser: jest.Mock;
   };
 
   beforeEach(() => {
@@ -68,10 +75,25 @@ describe('AuthService', () => {
       generateOpaqueToken: jest.fn(),
     };
 
+    authAuditService = {
+      success: jest.fn(),
+      failure: jest.fn(),
+      fromUser: jest.fn(
+        (user: { id: string; email: string } | null | undefined) =>
+          user
+            ? {
+                userId: user.id,
+                email: user.email,
+              }
+            : {},
+      ),
+    };
+
     service = new AuthService(
       prisma as unknown as PrismaService,
       passwordHasher,
       authTokenService as unknown as AuthTokenService,
+      authAuditService as unknown as AuthAuditService,
       new ConfigService({
         JWT_REFRESH_EXPIRES_IN: '30d',
         PASSWORD_RESET_EXPIRES_IN_MINUTES: 30,
@@ -96,6 +118,11 @@ describe('AuthService', () => {
     prisma.authSession.update.mockResolvedValue({});
     authTokenService.generateOpaqueToken.mockReturnValue('refresh-secret');
     authTokenService.signAccessToken.mockResolvedValue('access-token');
+    const meta: HttpRequestContext = {
+      ipAddress: '127.0.0.1',
+      userAgent: 'jest',
+      requestId: 'req-1',
+    };
 
     const response = await service.register(
       {
@@ -103,13 +130,11 @@ describe('AuthService', () => {
         fullName: 'Colaborador Gran',
         password: 'Senha#123',
       },
-      {
-        ipAddress: '127.0.0.1',
-        userAgent: 'jest',
-      },
+      meta,
     );
 
     expect(prisma.user.create).toHaveBeenCalled();
+    expect(authAuditService.success).toHaveBeenCalled();
     expect(response.accessToken).toBe('access-token');
     expect(response.refreshToken).toBe('session-1.refresh-secret');
   });
@@ -127,6 +152,8 @@ describe('AuthService', () => {
         {},
       ),
     ).rejects.toBeInstanceOf(ConflictException);
+
+    expect(authAuditService.failure).toHaveBeenCalled();
   });
 
   it('rejects login with invalid password', async () => {
@@ -150,5 +177,7 @@ describe('AuthService', () => {
         {},
       ),
     ).rejects.toBeInstanceOf(UnauthorizedException);
+
+    expect(authAuditService.failure).toHaveBeenCalled();
   });
 });

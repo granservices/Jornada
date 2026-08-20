@@ -30,6 +30,13 @@ Entregas:
 - idempotencia e correlacao por evento
 - logs estruturados
 
+Status em 20 de agosto de 2026:
+
+- contratos DTO minimos ja definidos para `employees`, `expiring-requirements` e `boarding-schedule`
+- correlacao por `requestId` e `correlationId` ja implementada
+- inbox persistida para webhooks do Drake ja desenhada na camada Prisma
+- migrations ainda pendentes
+
 ## Phase 1.5 - Platform hardening
 
 Objetivo: consolidar a base tecnica antes da expansao funcional.

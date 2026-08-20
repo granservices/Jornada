@@ -16,11 +16,11 @@
 ## Platform baseline
 
 - [x] Instalar stack base de validacao, swagger e throttling
-- [ ] Adicionar logging estruturado inicial
+- [x] Adicionar logging estruturado inicial
 - [x] Definir estrutura de modulos no backend
 - [x] Definir estrategia de configuracao por ambiente
 - [ ] Definir observabilidade inicial
-- [ ] Definir estrategia de erros e auditoria
+- [ ] Consolidar estrategia de erros e auditoria
 - [x] Definir estrategia de testes e cobertura
 - [x] Preparar `docker compose` final com Postgres e Redis
 
@@ -29,18 +29,18 @@
 - [x] Configurar PostgreSQL
 - [x] Configurar Prisma
 - [x] Definir primeira modelagem de schema
-- [ ] Preparar migracoes
+- [x] Preparar migracoes
 - [ ] Decidir entrada inicial de Redis ou deixá-lo apenas preparado
 
 ## External integrations
 
-- [ ] Definir payload esperado de `employees`
-- [ ] Definir payload esperado de `expiring-requirements`
-- [ ] Definir payload esperado de `boarding-schedule`
-- [ ] Implementar validacao de schema
-- [ ] Implementar idempotencia
-- [ ] Implementar logs estruturados
-- [ ] Implementar correlacao por request/evento
+- [x] Definir payload esperado de `employees`
+- [x] Definir payload esperado de `expiring-requirements`
+- [x] Definir payload esperado de `boarding-schedule`
+- [x] Implementar validacao de schema
+- [x] Implementar idempotencia
+- [x] Implementar logs estruturados
+- [x] Implementar correlacao por request/evento
 - [ ] Definir strategy de fila/processamento futuro
 
 ## Domain modeling
@@ -60,8 +60,10 @@
 - [x] Definir fluxos de login, criar conta e recuperar senha
 - [x] Definir sessao, refresh token e revogacao
 - [x] Implementar baseline do modulo `auth` no backend
+- [x] Adicionar auditoria basica do `auth`
+- [x] Endurecer fluxo de recuperacao de senha
 - [ ] Definir verificacao de email e onboarding inicial
-- [ ] Endurecer autenticacao
+- [ ] Consolidar endurecimento avancado da autenticacao
 - [ ] Definir UX mobile-first
 - [ ] Definir estrategia PWA
 - [ ] Definir estrategia offline parcial

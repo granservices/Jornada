@@ -21,6 +21,25 @@ enum Role {
   OPERATIONS
 }
 
+enum AuthAuditEventType {
+  REGISTER
+  LOGIN
+  REFRESH
+  LOGOUT
+  FORGOT_PASSWORD
+  RESET_PASSWORD
+}
+
+enum AuthAuditOutcome {
+  SUCCESS
+  FAILURE
+}
+
+enum IntegrationInboxStatus {
+  RECEIVED
+  DUPLICATE
+}
+
 model User {
   id                String               @id @default(cuid())
   email             String               @unique
@@ -34,6 +53,7 @@ model User {
   updatedAt         DateTime             @updatedAt
   sessions          AuthSession[]
   passwordResetLogs PasswordResetToken[]
+  authAuditLogs     AuthAuditLog[]
 }
 
 model AuthSession {
@@ -64,4 +84,43 @@ model PasswordResetToken {
 
   @@index([userId])
   @@index([expiresAt])
+}
+
+model AuthAuditLog {
+  id          String           @id @default(cuid())
+  userId      String?
+  email       String?
+  eventType   AuthAuditEventType
+  outcome     AuthAuditOutcome
+  requestId   String?
+  ipAddress   String?
+  userAgent   String?
+  reason      String?
+  createdAt   DateTime         @default(now())
+  user        User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([eventType, createdAt])
+  @@index([requestId])
+}
+
+model DrakeWebhookInboxEvent {
+  id              String                 @id @default(cuid())
+  webhookType     String
+  requestId       String?
+  correlationId   String
+  idempotencyKey  String                 @unique
+  eventName       String?
+  externalEventId String?
+  employeeId      String?
+  status          IntegrationInboxStatus @default(RECEIVED)
+  payload         Json
+  metadata        Json
+  storagePath     String?
+  createdAt       DateTime               @default(now())
+
+  @@index([webhookType, createdAt])
+  @@index([correlationId])
+  @@index([externalEventId])
+  @@index([employeeId])
 }
