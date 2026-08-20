@@ -9,7 +9,9 @@
   "scripts": {
     "infra:up": "powershell -ExecutionPolicy Bypass -File ./scripts/start-local-infra.ps1",
     "dev:api": "npm run start:dev --workspace @jornada/api",
+    "dev:web": "npm run dev --workspace @jornada/web",
     "build:api": "npm run build --workspace @jornada/api",
+    "build:web": "npm run build --workspace @jornada/web",
     "lint:api": "npm run lint --workspace @jornada/api",
     "test:api": "npm run test --workspace @jornada/api",
     "test:api:cov": "npm run test:cov --workspace @jornada/api",

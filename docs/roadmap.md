@@ -64,6 +64,12 @@ Entregas:
 - auditoria de autenticacao
 - base pronta para federacao futura com `Entra ID`
 
+Status em 20 de agosto de 2026:
+
+- backend de `auth` ja estabelecido
+- shell visual de login, cadastro, recuperacao e redefinicao iniciado em `apps/web`
+- proximo passo natural e conectar os fluxos visuais ao backend real
+
 ## Phase 3 - Processing core
 
 Objetivo: processar o que chega do Drake sem acoplar a API externa ao dominio interno.
@@ -114,6 +120,12 @@ Entregas:
 - cache e estrategia offline parcial
 - notificacoes push
 - UX mobile-first
+
+Status em 20 de agosto de 2026:
+
+- `apps/web` iniciado com `Vite`, `React`, `React Aria Components`, `Tailwind CSS` e `vite-plugin-pwa`
+- shell mobile-first ja definido com navegacao inferior no celular e sidebar no desktop
+- tema base claro ja definido, com neutros frios e vermelho reservado para acento e estados criticos
 
 ## Phase 7 - Operations and intelligence
 

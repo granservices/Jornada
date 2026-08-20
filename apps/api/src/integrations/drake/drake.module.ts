@@ -1,5 +1,8 @@
 import { Module } from '@nestjs/common';
 import { BullModule } from '@nestjs/bullmq';
+import { BoardingScheduleModule } from '../../modules/boarding-schedule/boarding-schedule.module';
+import { EmployeesModule } from '../../modules/employees/employees.module';
+import { ExpiringRequirementsModule } from '../../modules/expiring-requirements/expiring-requirements.module';
 import { DrakeController } from './drake.controller';
 import { DRAKE_WEBHOOK_QUEUE_NAME } from './drake.constants';
 import { DrakeWebhookAuthGuard } from './drake-webhook-auth.guard';
@@ -15,6 +18,9 @@ import { DrakeWebhookStorageService } from './drake-webhook-storage.service';
     BullModule.registerQueue({
       name: DRAKE_WEBHOOK_QUEUE_NAME,
     }),
+    EmployeesModule,
+    BoardingScheduleModule,
+    ExpiringRequirementsModule,
   ],
   controllers: [DrakeController],
   providers: [

@@ -11,6 +11,9 @@ import { PrismaModule } from './database/prisma.module';
 import { HealthModule } from './health/health.module';
 import { DrakeModule } from './integrations/drake/drake.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { BoardingScheduleModule } from './modules/boarding-schedule/boarding-schedule.module';
+import { EmployeesModule } from './modules/employees/employees.module';
+import { ExpiringRequirementsModule } from './modules/expiring-requirements/expiring-requirements.module';
 
 @Module({
   imports: [
@@ -64,6 +67,9 @@ import { AuthModule } from './modules/auth/auth.module';
     }),
     PrismaModule,
     HealthModule,
+    EmployeesModule,
+    BoardingScheduleModule,
+    ExpiringRequirementsModule,
     DrakeModule,
     AuthModule,
   ],

@@ -1,11 +1,21 @@
 # Jornada Web
 
-Espaco reservado para o frontend `PWA` do `Jornada`.
+Frontend `PWA` do `Jornada`.
 
-Stack decidida ate aqui:
+Base atual:
 
+- `Vite`
 - `React`
+- `React Router`
 - `React Aria Components`
 - `Tailwind CSS`
+- `vite-plugin-pwa`
 
-O primeiro fluxo completo do frontend sera `auth`.
+Primeiras entregas visuais:
+
+- shell de `auth`
+- login
+- cadastro
+- recuperar senha
+- redefinir senha
+- area logada inicial com agenda, vencimentos e comunicados

@@ -6,6 +6,36 @@ O `Jornada` tera um unico app web, responsivo e mobile-first, com `PWA` desde a 
 
 Nao vamos criar dois frontends separados para celular e desktop.
 
+## Theme direction
+
+Tema recomendado para a base 1:
+
+- claro como padrao principal
+- neutros frios e cinzas suaves como superficie
+- transparencias acinzentadas com blur moderado
+- vermelho apenas como acento de marca e estados criticos
+
+Racional:
+
+- leitura em ambiente externo tende a ser melhor no tema claro
+- vermelho em produto operacional precisa ter peso sem contaminar a interface inteira
+- superficies claras com contraste firme funcionam melhor para agenda, vencimentos e comunicados
+
+Paleta inicial recomendada:
+
+- `canvas`: `#f3f5f7`
+- `panel`: `#ffffff`
+- `panel-strong`: `#eef2f5`
+- `text-primary`: `#111827`
+- `text-secondary`: `#4b5563`
+- `text-muted`: `#6b7280`
+- `brand-red`: `#c7352c`
+- `brand-red-strong`: `#a92f27`
+- `warning`: `#b45309`
+- `critical`: `#b42318`
+
+O dark mode pode entrar depois, mas nao como tema principal do MVP.
+
 ## Chosen UI foundation
 
 Stack recomendada:
@@ -59,6 +89,26 @@ Nos resolvemos:
 - padroes especificos do `Jornada`
 
 ## Suggested component strategy
+
+Padrao recomendado:
+
+- uma biblioteca unica de componentes responsivos
+- variacoes de layout por breakpoint
+- variantes separadas apenas quando a interacao muda de verdade
+
+Exemplos em que vale separar:
+
+- navegacao inferior mobile versus sidebar desktop
+- drawer mobile versus painel lateral desktop
+
+Exemplos em que nao vale separar:
+
+- button
+- text field
+- badge
+- card de informacao
+
+Isso reduz manutencao e deixa o produto mais consistente.
 
 Camadas sugeridas:
 
