@@ -14,6 +14,7 @@ type PersistWebhookInput = {
 };
 
 type PersistWebhookResult = {
+  inboxEventId?: string;
   duplicate: boolean;
   storagePath: string | null;
 };
@@ -52,7 +53,7 @@ export class DrakeWebhookStorageService {
       metadata,
     );
 
-    await this.prisma.drakeWebhookInboxEvent.create({
+    const createdEvent = await this.prisma.drakeWebhookInboxEvent.create({
       data: {
         webhookType,
         requestId: metadata.requestId,
@@ -69,9 +70,71 @@ export class DrakeWebhookStorageService {
     });
 
     return {
+      inboxEventId: createdEvent.id,
       duplicate: false,
       storagePath,
     };
+  }
+
+  async findByIdempotencyKey(idempotencyKey: string) {
+    return this.prisma.drakeWebhookInboxEvent.findUnique({
+      where: {
+        idempotencyKey,
+      },
+    });
+  }
+
+  async markQueued(idempotencyKey: string, lastError?: string | null) {
+    await this.prisma.drakeWebhookInboxEvent.update({
+      where: {
+        idempotencyKey,
+      },
+      data: {
+        status: IntegrationInboxStatus.QUEUED,
+        lastQueuedAt: new Date(),
+        lastError: lastError ?? null,
+      },
+    });
+  }
+
+  async markProcessing(idempotencyKey: string, attempt: number) {
+    await this.prisma.drakeWebhookInboxEvent.update({
+      where: {
+        idempotencyKey,
+      },
+      data: {
+        status: IntegrationInboxStatus.PROCESSING,
+        processingStartedAt: new Date(),
+        processingAttempts: attempt,
+      },
+    });
+  }
+
+  async markProcessed(idempotencyKey: string) {
+    await this.prisma.drakeWebhookInboxEvent.update({
+      where: {
+        idempotencyKey,
+      },
+      data: {
+        status: IntegrationInboxStatus.PROCESSED,
+        processedAt: new Date(),
+        failedAt: null,
+        lastError: null,
+      },
+    });
+  }
+
+  async markFailed(idempotencyKey: string, errorMessage: string) {
+    await this.prisma.drakeWebhookInboxEvent.update({
+      where: {
+        idempotencyKey,
+      },
+      data: {
+        status: IntegrationInboxStatus.FAILED,
+        failedAt: new Date(),
+        lastError: errorMessage,
+      },
+    });
   }
 
   buildCorrelationId(

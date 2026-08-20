@@ -37,6 +37,10 @@ enum AuthAuditOutcome {
 
 enum IntegrationInboxStatus {
   RECEIVED
+  QUEUED
+  PROCESSING
+  PROCESSED
+  FAILED
   DUPLICATE
 }
 
@@ -105,22 +109,29 @@ model AuthAuditLog {
 }
 
 model DrakeWebhookInboxEvent {
-  id              String                 @id @default(cuid())
-  webhookType     String
-  requestId       String?
-  correlationId   String
-  idempotencyKey  String                 @unique
-  eventName       String?
-  externalEventId String?
-  employeeId      String?
-  status          IntegrationInboxStatus @default(RECEIVED)
-  payload         Json
-  metadata        Json
-  storagePath     String?
-  createdAt       DateTime               @default(now())
+  id                 String                 @id @default(cuid())
+  webhookType        String
+  requestId          String?
+  correlationId      String
+  idempotencyKey     String                 @unique
+  eventName          String?
+  externalEventId    String?
+  employeeId         String?
+  status             IntegrationInboxStatus @default(RECEIVED)
+  payload            Json
+  metadata           Json
+  storagePath        String?
+  processingAttempts Int                    @default(0)
+  lastQueuedAt       DateTime?
+  processingStartedAt DateTime?
+  processedAt        DateTime?
+  failedAt           DateTime?
+  lastError          String?
+  createdAt          DateTime               @default(now())
 
   @@index([webhookType, createdAt])
   @@index([correlationId])
   @@index([externalEventId])
   @@index([employeeId])
+  @@index([status, createdAt])
 }

@@ -8,6 +8,9 @@ export const envValidationSchema = Joi.object({
   DATABASE_URL: Joi.string()
     .uri({ scheme: ['postgresql', 'postgres'] })
     .required(),
+  REDIS_URL: Joi.string()
+    .uri({ scheme: ['redis', 'rediss'] })
+    .default('redis://localhost:6379'),
   LOG_LEVEL: Joi.string()
     .valid('fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent')
     .default('info'),
@@ -27,4 +30,10 @@ export const envValidationSchema = Joi.object({
   AUTH_THROTTLE_TTL_MS: Joi.number().integer().positive().default(900000),
   AUTH_THROTTLE_LIMIT: Joi.number().integer().positive().default(5),
   WEBHOOK_STORAGE_DIR: Joi.string().default('./data/webhooks'),
+  DRAKE_WEBHOOK_QUEUE_ENABLED: Joi.boolean().default(true),
+  DRAKE_WEBHOOK_QUEUE_ATTEMPTS: Joi.number().integer().positive().default(5),
+  DRAKE_WEBHOOK_QUEUE_BACKOFF_MS: Joi.number()
+    .integer()
+    .positive()
+    .default(5000),
 });

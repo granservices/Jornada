@@ -40,11 +40,15 @@ Use `.env` baseado em `.env.example`.
 NODE_ENV=development
 PORT=3004
 DATABASE_URL=postgresql://jornada:jornada@localhost:5434/jornada?schema=public
+REDIS_URL=redis://localhost:6379
 DRAKE_WEBHOOK_BEARER_TOKEN=replace-with-a-strong-random-token
 JWT_ACCESS_SECRET=replace-with-a-strong-random-token
 JWT_REFRESH_SECRET=replace-with-a-different-strong-random-token
 LOG_LEVEL=info
 WEBHOOK_STORAGE_DIR=./data/webhooks
+DRAKE_WEBHOOK_QUEUE_ENABLED=true
+DRAKE_WEBHOOK_QUEUE_ATTEMPTS=5
+DRAKE_WEBHOOK_QUEUE_BACKOFF_MS=5000
 ```
 
 ## Execucao local
@@ -81,3 +85,5 @@ O Swagger local fica em `http://localhost:3004/api/docs`.
 - `correlationId` para rastrear repeticoes e fluxo operacional
 - inbox persistida para eventos recebidos
 - payload bruto ainda salvo em arquivo para auditoria inicial
+- fila BullMQ com Redis para processamento assincrono
+- retries exponenciais e marcacao de falha final no inbox

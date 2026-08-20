@@ -82,6 +82,7 @@ Ja validado na base atual:
 
 - `lint` do backend
 - testes unitarios do `auth`
+- testes unitarios do intake e processor do Drake
 - teste `e2e` de `health`
 - `build` do `NestJS`
 

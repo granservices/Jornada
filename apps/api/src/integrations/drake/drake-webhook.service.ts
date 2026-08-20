@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { HttpRequestContext } from '../../common/http/request-context';
+import { DrakeWebhookQueueService } from './drake-webhook-queue.service';
 import { DrakeWebhookStorageService } from './drake-webhook-storage.service';
 import {
   DrakeWebhookMetadata,
@@ -11,7 +12,10 @@ import {
 export class DrakeWebhookService {
   private readonly logger = new Logger(DrakeWebhookService.name);
 
-  constructor(private readonly storageService: DrakeWebhookStorageService) {}
+  constructor(
+    private readonly storageService: DrakeWebhookStorageService,
+    private readonly queueService: DrakeWebhookQueueService,
+  ) {}
 
   async receive(
     webhookType: DrakeWebhookType,
@@ -44,17 +48,33 @@ export class DrakeWebhookService {
       ),
     };
 
-    const { duplicate, storagePath } = await this.storageService.persist({
-      webhookType,
-      payload,
-      metadata,
-    });
+    const { duplicate, inboxEventId, storagePath } =
+      await this.storageService.persist({
+        webhookType,
+        payload,
+        metadata,
+      });
 
     if (duplicate) {
       this.logger.warn(
         `Duplicate Drake webhook ignored for ${webhookType} with idempotency key ${metadata.idempotencyKey}`,
       );
     } else {
+      try {
+        await this.queueService.enqueue({
+          inboxEventId: inboxEventId!,
+          webhookType,
+          idempotencyKey: metadata.idempotencyKey,
+          correlationId: metadata.correlationId,
+        });
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : 'unknown queue error';
+        this.logger.error(
+          `Webhook ${webhookType} stored but not enqueued for correlation ${metadata.correlationId}: ${message}`,
+        );
+      }
+
       this.logger.log(
         `Webhook ${webhookType} received and stored at ${storagePath} with correlation ${metadata.correlationId}`,
       );

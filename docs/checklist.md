@@ -30,7 +30,7 @@
 - [x] Configurar Prisma
 - [x] Definir primeira modelagem de schema
 - [x] Preparar migracoes
-- [ ] Decidir entrada inicial de Redis ou deixá-lo apenas preparado
+- [x] Decidir entrada inicial de Redis ou deixá-lo apenas preparado
 
 ## External integrations
 
@@ -41,7 +41,7 @@
 - [x] Implementar idempotencia
 - [x] Implementar logs estruturados
 - [x] Implementar correlacao por request/evento
-- [ ] Definir strategy de fila/processamento futuro
+- [x] Definir strategy de fila/processamento futuro
 
 ## Domain modeling
 
@@ -80,6 +80,6 @@
 
 - [ ] Definir observabilidade
 - [ ] Definir se entra Sentry desde a base 1 ou na fase seguinte
-- [ ] Definir retries e dead-letter
+- [x] Definir retries e dead-letter
 - [ ] Definir processo de deploy
 - [ ] Definir homologacao e producao

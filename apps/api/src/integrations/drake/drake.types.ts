@@ -13,6 +13,13 @@ export type DrakeWebhookReceipt = {
   idempotencyKey: string;
 };
 
+export type DrakeWebhookQueueJob = {
+  inboxEventId: string;
+  webhookType: DrakeWebhookType;
+  idempotencyKey: string;
+  correlationId: string;
+};
+
 export type DrakeWebhookMetadata = {
   eventName: string | null;
   eventId: string | null;

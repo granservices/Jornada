@@ -35,6 +35,8 @@ npm run test:api:cov
 
 `npm run infra:up` procura a primeira porta livre a partir de `5434`, atualiza o `DATABASE_URL` local da API e sobe apenas `postgres` e `redis`.
 
+Com a infra local no ar, a API usa o Redis em `REDIS_URL` para processar os webhooks do Drake de forma assincrona via BullMQ.
+
 ## Docker Compose
 
 O `docker-compose.yml` da raiz prepara o ambiente local com:

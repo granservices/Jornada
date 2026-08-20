@@ -34,8 +34,8 @@ Status em 20 de agosto de 2026:
 
 - contratos DTO minimos ja definidos para `employees`, `expiring-requirements` e `boarding-schedule`
 - correlacao por `requestId` e `correlationId` ja implementada
-- inbox persistida para webhooks do Drake ja desenhada na camada Prisma
-- migrations ainda pendentes
+- inbox persistida para webhooks do Drake ja aplicada na camada Prisma
+- fila BullMQ com Redis e retries exponenciais ja conectada ao intake
 
 ## Phase 1.5 - Platform hardening
 
@@ -74,6 +74,13 @@ Entregas:
 - fila ou outbox/inbox
 - retries e dead-letter strategy
 - regras de atualizacao de agenda, vencimentos e comunicados
+
+Status em 20 de agosto de 2026:
+
+- fila inicial criada com `BullMQ`
+- `jobId` baseado em `idempotencyKey`
+- transicoes do inbox para `QUEUED`, `PROCESSING`, `PROCESSED` e `FAILED`
+- handlers ainda estao em modo baseline, prontos para receber a regra de negocio real
 
 ## Phase 4 - Employee domain
 
