@@ -75,29 +75,25 @@ a {
 }
 
 .auth-direction-layer {
+  contain: layout paint style;
+  backface-visibility: hidden;
   transform:
     perspective(980px)
-    translate3d(var(--auth-drift-x), var(--auth-drift-y), 0)
-    rotateX(var(--auth-tilt-x))
-    rotateY(var(--auth-tilt-y))
+    translate3d(0, 0, 0)
+    rotateX(0deg)
+    rotateY(0deg)
     scale(1.04);
-  transform-origin:
-    calc(50% + var(--auth-focus-x))
-    calc(42% + var(--auth-focus-y));
-  transition:
-    transform 120ms linear,
-    transform-origin 180ms ease-out;
+  transform-origin: 50% 42%;
   will-change: transform, transform-origin;
 }
 
 .auth-direction-layer-near {
   transform:
     perspective(840px)
-    translate3d(var(--auth-near-drift-x), var(--auth-near-drift-y), 0)
-    rotateX(var(--auth-near-tilt-x))
-    rotateY(var(--auth-near-tilt-y))
+    translate3d(0, 0, 0)
+    rotateX(0deg)
+    rotateY(0deg)
     scale(1.06);
-  transition-duration: 90ms, 160ms;
 }
 
 .auth-star-depth {
@@ -154,7 +150,7 @@ a {
 .auth-warp-vignette {
   background:
     radial-gradient(
-      circle at calc(50% + var(--auth-focus-x)) calc(42% + var(--auth-focus-y)),
+      circle at 50% 42%,
       transparent 0 11%,
       rgba(2, 6, 23, 0.2) 30%,
       rgba(2, 6, 23, 0.58) 84%
@@ -188,6 +184,35 @@ a {
   border-radius: 999px;
   transform: translate(-100%, -50%) rotate(var(--angle));
   transform-origin: left center;
+}
+
+.auth-pass-object {
+  backface-visibility: hidden;
+  transform: translate3d(0, 0, 0);
+  will-change: opacity, transform;
+}
+
+.auth-scene-loader {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 50% 45%, rgba(253, 0, 0, 0.11), transparent 0 22%),
+    radial-gradient(circle at 50% 50%, rgba(2, 6, 23, 0.36), rgba(2, 6, 23, 0.74) 58%, rgba(2, 6, 23, 0.84));
+}
+
+.auth-scene-loader-logo {
+  width: 54px;
+  height: 54px;
+  object-fit: contain;
+  opacity: 0.9;
+  animation: auth-scene-loader-spin 1.15s linear infinite;
+  filter:
+    drop-shadow(0 0 10px rgba(255, 255, 255, 0.32))
+    drop-shadow(0 0 24px rgba(253, 0, 0, 0.36));
 }
 
 .auth-space-title {
@@ -423,7 +448,6 @@ a {
       color-mix(in srgb, var(--planet-ring) 70%, transparent) 78%,
       transparent 91% 100%
     );
-  filter: drop-shadow(0 0 7px color-mix(in srgb, var(--planet-ring) 58%, transparent));
   -webkit-mask: radial-gradient(ellipse at center, transparent 0 54%, #000 55% 63%, transparent 64%);
   mask: radial-gradient(ellipse at center, transparent 0 54%, #000 55% 63%, transparent 64%);
   opacity: 0.9;
@@ -449,7 +473,6 @@ a {
       transparent 90% 100%
     );
   clip-path: inset(49% 0 0 0);
-  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--planet-ring) 60%, transparent));
   -webkit-mask: radial-gradient(ellipse at center, transparent 0 53%, #000 54% 62%, transparent 63%);
   mask: radial-gradient(ellipse at center, transparent 0 53%, #000 54% 62%, transparent 63%);
   pointer-events: none;
@@ -538,7 +561,7 @@ a {
   background:
     radial-gradient(ellipse at right, rgba(255, 255, 255, 0.28), rgba(56, 189, 248, 0.12) 42%, transparent 72%);
   border-radius: 999px;
-  filter: blur(8px);
+  filter: blur(4px);
   transform: translateY(-50%);
 }
 
@@ -546,9 +569,6 @@ a {
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  filter:
-    drop-shadow(0 0 8px rgba(125, 211, 252, 0.34))
-    drop-shadow(0 14px 18px rgba(2, 6, 23, 0.4));
 }
 
 .auth-satellite-body {
@@ -594,17 +614,14 @@ a {
   0%,
   100% {
     opacity: 0.28;
-    filter: brightness(0.92);
   }
 
   45% {
     opacity: 0.42;
-    filter: brightness(1.16);
   }
 
   68% {
     opacity: 0.32;
-    filter: brightness(0.98);
   }
 }
 
@@ -678,6 +695,20 @@ a {
 
   to {
     transform: rotateZ(368deg) rotateX(-62deg) scale(0.82);
+  }
+}
+
+@keyframes auth-scene-loader-spin {
+  from {
+    transform: rotate(0deg) scale(0.96);
+  }
+
+  50% {
+    transform: rotate(180deg) scale(1.04);
+  }
+
+  to {
+    transform: rotate(360deg) scale(0.96);
   }
 }
 

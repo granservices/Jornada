@@ -129,9 +129,29 @@ const passingSatellites = [
   { origin: { left: '45%', top: '54%' }, delay: 30, duration: 23, x: -82, y: 54, rotate: -18 },
 ];
 
+const getSceneAlreadyPrepared = () => {
+  try {
+    return window.sessionStorage.getItem('jornada-auth-scene-ready') === 'true';
+  } catch {
+    return false;
+  }
+};
+
+const markScenePrepared = () => {
+  try {
+    window.sessionStorage.setItem('jornada-auth-scene-ready', 'true');
+  } catch {
+    // The loader is only a polish layer, so storage failures should not block login.
+  }
+};
+
 export function AuthLayout() {
   const [showLogin, setShowLogin] = useState(false);
+  const [sceneReady, setSceneReady] = useState(false);
+  const [canUseDeepScene, setCanUseDeepScene] = useState(false);
   const sceneRef = useRef<HTMLElement | null>(null);
+  const farLayerRef = useRef<HTMLDivElement | null>(null);
+  const nearLayerRef = useRef<HTMLDivElement | null>(null);
   const frameRef = useRef<number | null>(null);
   const viewTargetRef = useRef({ x: 0, y: 0 });
   const viewCurrentRef = useRef({ x: 0, y: 0 });
@@ -147,6 +167,42 @@ export function AuthLayout() {
   }, []);
 
   useEffect(() => {
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const desktopQuery = window.matchMedia('(min-width: 768px)');
+
+    const updateSceneCapability = () => {
+      setCanUseDeepScene(desktopQuery.matches && !motionQuery.matches);
+    };
+
+    updateSceneCapability();
+    desktopQuery.addEventListener('change', updateSceneCapability);
+    motionQuery.addEventListener('change', updateSceneCapability);
+
+    return () => {
+      desktopQuery.removeEventListener('change', updateSceneCapability);
+      motionQuery.removeEventListener('change', updateSceneCapability);
+    };
+  }, []);
+
+  useEffect(() => {
+    const alreadyPrepared = getSceneAlreadyPrepared();
+
+    if (alreadyPrepared) {
+      setSceneReady(true);
+      return;
+    }
+
+    const sceneTimer = window.setTimeout(() => {
+      markScenePrepared();
+      setSceneReady(true);
+    }, 820);
+
+    return () => {
+      window.clearTimeout(sceneTimer);
+    };
+  }, []);
+
+  useEffect(() => {
     return () => {
       if (frameRef.current !== null) {
         window.cancelAnimationFrame(frameRef.current);
@@ -155,32 +211,35 @@ export function AuthLayout() {
   }, []);
 
   const applyLookDirection = (x: number, y: number) => {
-    const target = sceneRef.current;
+    const farLayer = farLayerRef.current;
+    const nearLayer = nearLayerRef.current;
 
-    if (!target) {
+    if (!farLayer || !nearLayer) {
       return;
     }
 
     const lookX = -x;
     const lookY = -y;
+    const farX = lookX * 104;
+    const farY = lookY * 74;
+    const nearX = lookX * 152;
+    const nearY = lookY * 112;
+    const farTiltX = lookY * 9.5;
+    const farTiltY = lookX * -13;
+    const nearTiltX = lookY * 12.4;
+    const nearTiltY = lookX * -17;
 
-    target.style.setProperty('--auth-drift-x', `${lookX * 104}px`);
-    target.style.setProperty('--auth-drift-y', `${lookY * 74}px`);
-    target.style.setProperty('--auth-near-drift-x', `${lookX * 152}px`);
-    target.style.setProperty('--auth-near-drift-y', `${lookY * 112}px`);
-    target.style.setProperty('--auth-tilt-x', `${lookY * 9.5}deg`);
-    target.style.setProperty('--auth-tilt-y', `${lookX * -13}deg`);
-    target.style.setProperty('--auth-near-tilt-x', `${lookY * 12.4}deg`);
-    target.style.setProperty('--auth-near-tilt-y', `${lookX * -17}deg`);
-    target.style.setProperty('--auth-focus-x', `${lookX * 18}%`);
-    target.style.setProperty('--auth-focus-y', `${lookY * 14}%`);
+    farLayer.style.transform = `perspective(980px) translate3d(${farX}px, ${farY}px, 0) rotateX(${farTiltX}deg) rotateY(${farTiltY}deg) scale(1.04)`;
+    farLayer.style.transformOrigin = `${50 + lookX * 18}% ${42 + lookY * 14}%`;
+    nearLayer.style.transform = `perspective(840px) translate3d(${nearX}px, ${nearY}px, 0) rotateX(${nearTiltX}deg) rotateY(${nearTiltY}deg) scale(1.06)`;
+    nearLayer.style.transformOrigin = `${50 + lookX * 18}% ${42 + lookY * 14}%`;
   };
 
   const animateLookDirection = () => {
     const current = viewCurrentRef.current;
     const target = viewTargetRef.current;
-    const nextX = current.x + (target.x - current.x) * 0.075;
-    const nextY = current.y + (target.y - current.y) * 0.075;
+    const nextX = current.x + (target.x - current.x) * 0.09;
+    const nextY = current.y + (target.y - current.y) * 0.09;
 
     current.x = Math.abs(nextX) < 0.001 ? 0 : nextX;
     current.y = Math.abs(nextY) < 0.001 ? 0 : nextY;
@@ -232,22 +291,8 @@ export function AuthLayout() {
       className="relative min-h-screen overflow-hidden bg-[#07111d] text-white"
       onPointerLeave={handlePointerLeave}
       onPointerMove={handlePointerMove}
-      style={
-        {
-          '--auth-drift-x': '0px',
-          '--auth-drift-y': '0px',
-          '--auth-near-drift-x': '0px',
-          '--auth-near-drift-y': '0px',
-          '--auth-tilt-x': '0deg',
-          '--auth-tilt-y': '0deg',
-          '--auth-near-tilt-x': '0deg',
-          '--auth-near-tilt-y': '0deg',
-          '--auth-focus-x': '0%',
-          '--auth-focus-y': '0%',
-        } as CSSProperties
-      }
     >
-      <div className="pointer-events-none absolute inset-[-6%] auth-direction-layer">
+      <div ref={farLayerRef} className="pointer-events-none absolute inset-[-6%] auth-direction-layer">
         <div className="absolute inset-0 auth-hero-image" />
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(3,8,15,0.18),rgba(3,8,15,0.72))]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(253,0,0,0.18),transparent_28%),radial-gradient(circle_at_bottom,rgba(8,47,73,0.34),transparent_35%)]" />
@@ -281,8 +326,8 @@ export function AuthLayout() {
           transition={{ duration: 9.5, repeat: Number.POSITIVE_INFINITY, ease: 'easeInOut' }}
         />
       </div>
-      <div className="pointer-events-none absolute inset-[-6%] auth-direction-layer auth-direction-layer-near">
-        {passingPlanets.map(({ origin, size, delay, duration, x, y, colors, ring, ringTone }, index) => (
+      <div ref={nearLayerRef} className="pointer-events-none absolute inset-[-6%] auth-direction-layer auth-direction-layer-near">
+        {canUseDeepScene && sceneReady ? passingPlanets.map(({ origin, size, delay, duration, x, y, colors, ring, ringTone }, index) => (
           <motion.div
             key={`${origin.left}-${origin.top}-${index}`}
             initial={{ opacity: 0, scale: 0.18 }}
@@ -292,7 +337,6 @@ export function AuthLayout() {
               x: ['0vw', `${x * 0.08}vw`, `${x * 0.22}vw`, `${x * 0.48}vw`, `${x * 0.76}vw`, `${x}vw`],
               y: ['0vh', `${y * 0.08}vh`, `${y * 0.22}vh`, `${y * 0.48}vh`, `${y * 0.76}vh`, `${y}vh`],
               rotate: [0, -1, 2, 5, 9, 14],
-              filter: ['blur(2px)', 'blur(1px)', 'blur(0px)', 'blur(0px)', 'blur(1px)', 'blur(3px)'],
             }}
             transition={{
               duration,
@@ -301,7 +345,7 @@ export function AuthLayout() {
               repeat: Number.POSITIVE_INFINITY,
               repeatDelay: 14,
             }}
-            className="absolute hidden md:block"
+            className="auth-pass-object absolute"
             style={{ left: origin.left, top: origin.top }}
           >
             <span
@@ -319,8 +363,8 @@ export function AuthLayout() {
               {ring ? <span className="auth-planet-ring-front" /> : null}
             </span>
           </motion.div>
-        ))}
-        {passingAsteroids.map(({ origin, size, delay, duration, x, y, rotate }, index) => (
+        )) : null}
+        {canUseDeepScene && sceneReady ? passingAsteroids.map(({ origin, size, delay, duration, x, y, rotate }, index) => (
           <motion.div
             key={`asteroid-${index}`}
             initial={{ opacity: 0, scale: 0.12 }}
@@ -330,7 +374,6 @@ export function AuthLayout() {
               x: ['0vw', `${x * 0.1}vw`, `${x * 0.3}vw`, `${x * 0.68}vw`, `${x}vw`],
               y: ['0vh', `${y * 0.1}vh`, `${y * 0.3}vh`, `${y * 0.68}vh`, `${y}vh`],
               rotate: [rotate * 0.1, rotate * 0.45, rotate * 0.8, rotate, rotate * 1.24],
-              filter: ['blur(2px)', 'blur(1px)', 'blur(0px)', 'blur(1px)', 'blur(4px)'],
             }}
             transition={{
               duration,
@@ -339,7 +382,7 @@ export function AuthLayout() {
               repeat: Number.POSITIVE_INFINITY,
               repeatDelay: 16,
             }}
-            className="absolute hidden md:block"
+            className="auth-pass-object absolute"
             style={{ left: origin.left, top: origin.top }}
           >
             <span
@@ -347,8 +390,8 @@ export function AuthLayout() {
               style={{ '--asteroid-size': `${size}px` } as CSSProperties}
             />
           </motion.div>
-        ))}
-        {passingMeteors.map(({ origin, delay, duration, x, y, angle, size, tail, thickness }, index) => (
+        )) : null}
+        {canUseDeepScene && sceneReady ? passingMeteors.map(({ origin, delay, duration, x, y, angle, size, tail, thickness }, index) => (
           <motion.div
             key={`meteor-${index}`}
             initial={{ opacity: 0, scale: 0.12 }}
@@ -357,7 +400,6 @@ export function AuthLayout() {
               scale: [0.08, 0.24, 0.64, 1.18, 1.95, 2.45],
               x: ['0vw', `${x * 0.08}vw`, `${x * 0.24}vw`, `${x * 0.55}vw`, `${x * 0.86}vw`, `${x}vw`],
               y: ['0vh', `${y * 0.08}vh`, `${y * 0.24}vh`, `${y * 0.55}vh`, `${y * 0.86}vh`, `${y}vh`],
-              filter: ['blur(2px)', 'blur(1px)', 'blur(0px)', 'blur(0px)', 'blur(2px)', 'blur(5px)'],
             }}
             transition={{
               duration,
@@ -366,7 +408,7 @@ export function AuthLayout() {
               repeat: Number.POSITIVE_INFINITY,
               repeatDelay: 18,
             }}
-            className="absolute hidden md:block"
+            className="auth-pass-object absolute"
             style={{ left: origin.left, top: origin.top }}
           >
             <span
@@ -381,8 +423,8 @@ export function AuthLayout() {
               }
             />
           </motion.div>
-        ))}
-        {passingSatellites.map(({ origin, delay, duration, x, y, rotate }, index) => (
+        )) : null}
+        {canUseDeepScene && sceneReady ? passingSatellites.map(({ origin, delay, duration, x, y, rotate }, index) => (
           <motion.div
             key={`satellite-${index}`}
             initial={{ opacity: 0, scale: 0.12 }}
@@ -392,7 +434,6 @@ export function AuthLayout() {
               x: ['0vw', `${x * 0.1}vw`, `${x * 0.32}vw`, `${x * 0.68}vw`, `${x}vw`],
               y: ['0vh', `${y * 0.1}vh`, `${y * 0.32}vh`, `${y * 0.68}vh`, `${y}vh`],
               rotate: [rotate - 12, rotate - 4, rotate, rotate + 8, rotate + 14],
-              filter: ['blur(2px)', 'blur(1px)', 'blur(0px)', 'blur(1px)', 'blur(4px)'],
             }}
             transition={{
               duration,
@@ -401,7 +442,7 @@ export function AuthLayout() {
               repeat: Number.POSITIVE_INFINITY,
               repeatDelay: 18,
             }}
-            className="absolute hidden md:block"
+            className="auth-pass-object absolute"
             style={{ left: origin.left, top: origin.top }}
           >
             <span className="auth-satellite">
@@ -410,8 +451,23 @@ export function AuthLayout() {
               <span className="auth-satellite-panel auth-satellite-panel-right" />
             </span>
           </motion.div>
-        ))}
+        )) : null}
       </div>
+
+      <AnimatePresence>
+        {!sceneReady ? (
+          <motion.div
+            key="auth-scene-loader"
+            className="auth-scene-loader"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.32, ease: 'easeOut' }}
+          >
+            <img src="/crew-logo.png" alt="Gran Services" className="auth-scene-loader-logo" />
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
 
       <div className="relative mx-auto flex min-h-screen w-full max-w-[1600px] items-center justify-center px-4 py-5 sm:px-6 sm:py-6 lg:px-8 xl:px-10">
         <div className="relative w-full max-w-md">
