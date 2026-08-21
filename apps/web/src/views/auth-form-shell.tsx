@@ -60,9 +60,15 @@ export function AuthFormShell({
       ) : null}
       <Form autoComplete="off" className={compact ? 'relative space-y-4' : 'relative mt-6 space-y-4'}>
         {children}
-        <Button type="submit" className="auth-submit-button w-full rounded-2xl min-h-12">
-          {submitLabel}
-        </Button>
+        <motion.div
+          initial={{ opacity: 0, y: 18, scale: 0.96 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.62, delay: compact ? 1.56 : 0.22, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <Button type="submit" className="auth-submit-button w-full rounded-2xl min-h-12">
+            {submitLabel}
+          </Button>
+        </motion.div>
         {afterSubmit ? <div className="pt-1">{afterSubmit}</div> : null}
       </Form>
       {footerText && footerActionLabel && footerActionTo ? (

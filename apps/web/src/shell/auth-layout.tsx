@@ -159,7 +159,7 @@ export function AuthLayout() {
   useEffect(() => {
     const revealTimer = window.setTimeout(() => {
       setShowLogin(true);
-    }, 950);
+    }, 1300);
 
     return () => {
       window.clearTimeout(revealTimer);
@@ -229,9 +229,9 @@ export function AuthLayout() {
     const nearTiltX = lookY * 12.4;
     const nearTiltY = lookX * -17;
 
-    farLayer.style.transform = `perspective(980px) translate3d(${farX}px, ${farY}px, 0) rotateX(${farTiltX}deg) rotateY(${farTiltY}deg) scale(1.04)`;
+    farLayer.style.transform = `perspective(980px) translate3d(${farX}px, ${farY}px, 0) rotateX(${farTiltX}deg) rotateY(${farTiltY}deg) scale(1.1)`;
     farLayer.style.transformOrigin = `${50 + lookX * 18}% ${42 + lookY * 14}%`;
-    nearLayer.style.transform = `perspective(840px) translate3d(${nearX}px, ${nearY}px, 0) rotateX(${nearTiltX}deg) rotateY(${nearTiltY}deg) scale(1.06)`;
+    nearLayer.style.transform = `perspective(840px) translate3d(${nearX}px, ${nearY}px, 0) rotateX(${nearTiltX}deg) rotateY(${nearTiltY}deg) scale(1.12)`;
     nearLayer.style.transformOrigin = `${50 + lookX * 18}% ${42 + lookY * 14}%`;
   };
 
@@ -292,7 +292,7 @@ export function AuthLayout() {
       onPointerLeave={handlePointerLeave}
       onPointerMove={handlePointerMove}
     >
-      <div ref={farLayerRef} className="pointer-events-none absolute inset-[-6%] auth-direction-layer">
+      <div ref={farLayerRef} className="pointer-events-none absolute inset-[-18%] auth-direction-layer">
         <div className="absolute inset-0 auth-hero-image" />
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(3,8,15,0.18),rgba(3,8,15,0.72))]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(253,0,0,0.18),transparent_28%),radial-gradient(circle_at_bottom,rgba(8,47,73,0.34),transparent_35%)]" />
@@ -326,7 +326,7 @@ export function AuthLayout() {
           transition={{ duration: 9.5, repeat: Number.POSITIVE_INFINITY, ease: 'easeInOut' }}
         />
       </div>
-      <div ref={nearLayerRef} className="pointer-events-none absolute inset-[-6%] auth-direction-layer auth-direction-layer-near">
+      <div ref={nearLayerRef} className="pointer-events-none absolute inset-[-18%] auth-direction-layer auth-direction-layer-near">
         {canUseDeepScene && sceneReady ? passingPlanets.map(({ origin, size, delay, duration, x, y, colors, ring, ringTone }, index) => (
           <motion.div
             key={`${origin.left}-${origin.top}-${index}`}
@@ -464,7 +464,7 @@ export function AuthLayout() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.32, ease: 'easeOut' }}
           >
-            <img src="/crew-logo.png" alt="Gran Services" className="auth-scene-loader-logo" />
+            <img src="/crew-logo.png" alt="GranServices" className="auth-scene-loader-logo" />
           </motion.div>
         ) : null}
       </AnimatePresence>
@@ -481,12 +481,20 @@ export function AuthLayout() {
             {showLogin ? (
               <motion.div
                 key="auth-form"
-                initial={{ opacity: 0, y: 28, scale: 0.985 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
-                className="relative z-10"
+                initial={{ opacity: 0, y: 70, scale: 0.9, rotateX: 18, filter: 'blur(10px)' }}
+                animate={{
+                  opacity: [0, 0.42, 0.86, 1],
+                  y: [70, 18, -4, 0],
+                  scale: [0.9, 0.97, 1.012, 1],
+                  rotateX: [18, 7, -2, 0],
+                  filter: ['blur(10px)', 'blur(5px)', 'blur(1px)', 'blur(0px)'],
+                }}
+                transition={{ duration: 1.55, times: [0, 0.45, 0.82, 1], ease: [0.16, 1, 0.3, 1] }}
+                className="auth-form-stage relative z-10"
               >
-                <Outlet />
+                <div className="relative z-10">
+                  <Outlet />
+                </div>
               </motion.div>
             ) : null}
           </AnimatePresence>
