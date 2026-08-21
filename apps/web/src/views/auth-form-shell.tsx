@@ -11,6 +11,7 @@ type AuthFormShellProps = {
   description?: string;
   submitLabel: string;
   children: ReactNode;
+  afterSubmit?: ReactNode;
   footerText?: string;
   footerActionLabel?: string;
   footerActionTo?: string;
@@ -23,6 +24,7 @@ export function AuthFormShell({
   description,
   submitLabel,
   children,
+  afterSubmit,
   footerText,
   footerActionLabel,
   footerActionTo,
@@ -30,14 +32,14 @@ export function AuthFormShell({
 }: AuthFormShellProps) {
   return (
     <SectionCard
-      className={compact ? 'rounded-[32px] p-5 sm:p-7' : 'rounded-[28px] p-5 sm:p-7'}
+      className="rounded-[30px] border-0 !bg-transparent px-8 py-9 !shadow-none !backdrop-blur-none sm:p-0"
     >
       {!compact && (eyebrow || title || description) ? (
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.32, ease: 'easeOut' }}
-          className="space-y-2"
+          className="relative space-y-2"
         >
           {eyebrow ? (
             <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[var(--brand-700)]">
@@ -45,7 +47,7 @@ export function AuthFormShell({
             </p>
           ) : null}
           {title ? (
-            <h2 className="text-2xl font-semibold text-[var(--text-primary)]">
+            <h2 className="text-2xl font-semibold text-[var(--text-primary)] sm:text-[1.75rem]">
               {title}
             </h2>
           ) : null}
@@ -56,11 +58,12 @@ export function AuthFormShell({
           ) : null}
         </motion.div>
       ) : null}
-      <Form className="mt-6 space-y-4">
+      <Form autoComplete="off" className={compact ? 'relative space-y-4' : 'relative mt-6 space-y-4'}>
         {children}
-        <Button type="submit" className="w-full">
+        <Button type="submit" className="auth-submit-button w-full rounded-2xl min-h-12">
           {submitLabel}
         </Button>
+        {afterSubmit ? <div className="pt-1">{afterSubmit}</div> : null}
       </Form>
       {footerText && footerActionLabel && footerActionTo ? (
         <p className="mt-5 text-center text-sm text-[var(--text-muted)]">
