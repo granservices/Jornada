@@ -1,0 +1,3 @@
+# External sources feed internal contracts
+
+The Jornada app will not depend directly on external API or webhook payloads while the sources are still future or undecided. We will define internal contracts for the app first, starting with `UserAccessContext`, `EmployeeProfile`, `ScheduleItem`, `RequirementExpiration`, `InboxItem`, `Communication`, and `IntegrationSyncRun`; use mock/seed/internal data during MVP development; and later connect each Fonte Externa through adapters/importers that handle authentication, idempotency, audit, retry, LGPD minimization, and translation into the Jornada domain.

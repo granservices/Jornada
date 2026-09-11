@@ -5,13 +5,20 @@
 - [x] Inicializar Git do repositorio
 - [x] Validar direcao `NestJS 11.2.1`
 - [x] Definir arquitetura feature-based sem clean architecture rigida
+- [x] Definir diretriz de codigo limpo, SOLID pragmatico, Object Calisthenics e erros explicitos
+- [x] Definir uso pragmatico de factories para criacao com regra, codigo ou invariante
+- [x] Definir LGPD como requisito obrigatorio de arquitetura e produto
 - [x] Definir backend separado do futuro frontend/PWA
+- [x] Definir direcao de ecossistema com apps separados para colaborador e operacao
+- [x] Criar `apps/help-hub` como frontend operacional inicial
 - [x] Criar documentacao inicial de roadmap, skill e checklist
 - [x] Criar documentacao de arquitetura, modulos e testes
+- [x] Definir `docs/agents-and-skills.md` como fonte operacional obrigatoria leve para mudancas materiais
+- [x] Definir agentes como responsabilidades arquiteturais/lentes de revisao, nao servicos obrigatorios
 - [x] Escolher base de UI com `React Aria Components` + `Tailwind CSS`
 - [x] Limpar a base antiga em Next.js local
 - [x] Mover a API definitiva para a estrutura final do monorepo
-- [x] Definir nomes finais de `apps/api` e futuro `apps/web`
+- [x] Definir nomes finais de `apps/api` e `apps/jornada`
 
 ## Platform baseline
 
@@ -19,8 +26,17 @@
 - [x] Adicionar logging estruturado inicial
 - [x] Definir estrutura de modulos no backend
 - [x] Definir estrategia de configuracao por ambiente
-- [ ] Definir observabilidade inicial
-- [ ] Consolidar estrategia de erros e auditoria
+- [x] Criar policy/helper inicial de sanitizacao para auditoria
+- [ ] Definir padrao de criptografia para campos sensiveis e anexos
+- [ ] Criar registro de avisos/consentimentos quando juridicamente necessario
+- [ ] Revisar logs para impedir CPF, tokens, documentos, saude e mensagens sensiveis
+- [ ] Criar padrao de erros de dominio e mapeamento para HTTP
+- [ ] Revisar services para reduzir `else`/aninhamento por guard clauses e policies
+- [ ] Revisar criacoes repetidas/complexas para factories quando houver ganho real
+- [ ] Proibir `catch` vazio sem justificativa documentada
+- [x] Definir observabilidade inicial como complemento tecnico, nao trilha oficial de negocio
+- [x] Consolidar estrategia inicial de auditoria em banco para acoes rastreaveis
+- [ ] Acoplar auditoria na mesma transacao em todas as acoes administrativas criticas
 - [x] Definir estrategia de testes e cobertura
 - [x] Preparar `docker compose` final com Postgres e Redis
 
@@ -30,28 +46,55 @@
 - [x] Configurar Prisma
 - [x] Definir primeira modelagem de schema
 - [x] Preparar migracoes
-- [x] Decidir entrada inicial de Redis ou deixá-lo apenas preparado
+- [x] Incluir Redis desde o inicio para filas, Socket.IO, cache e estados efemeros
+- [x] Criar `AuditLog` para rastrear acoes de negocio/configuracao com payload sanitizado
 
 ## External integrations
 
-- [x] Definir payload esperado de `employees`
-- [x] Definir payload esperado de `expiring-requirements`
-- [x] Definir payload esperado de `boarding-schedule`
+- [x] Definir APIs externas como fontes futuras, nao dependencias ativas do MVP atual
+- [x] Definir `Fonte Externa` como termo de produto/documentacao e `IntegrationSource` como nome tecnico futuro
+- [x] Definir que o app evolui por contratos internos antes de adapters externos
+- [x] Preservar webhooks Drake como implementacao historica separada
+- [x] Ativar piloto controlado do Crew Rotation para `ScheduleItem`, por leitura sob demanda e adapter backend
+- [x] Criar skill `jornada-drake-contracts` para manutencao historica dos webhooks Drake
+- [x] Criar skill `jornada-integration-sources` para governar fontes externas futuras
+- [x] Criar `docs/internal-contracts-and-sources.md` como mapa operacional de fontes futuras e contratos internos
+- [x] Definir payload esperado historico de `employees`
+- [x] Definir payload esperado historico de `expiring-requirements`
+- [x] Definir payload esperado historico de `boarding-schedule`
+- [x] Criar intake dedicado para arquivos de funcionarios do SISPAT (`csv` e `xlsx`)
 - [x] Implementar validacao de schema
 - [x] Implementar idempotencia
 - [x] Implementar logs estruturados
 - [x] Implementar correlacao por request/evento
 - [x] Definir strategy de fila/processamento futuro
+- [x] Criar mapa de fontes externas futuras com dado, consumidor, frequencia, risco LGPD inicial e status
+- [x] Definir contratos internos `EmployeeProfile`, `ScheduleItem`, `RequirementExpiration`, `InboxItem`, `Communication`, `UserAccessContext` e `IntegrationSyncRun`
+- [x] Implementar fixtures sanitizadas dos contratos internos iniciais no frontend
+- [x] Validar o frontend contra contratos internos, nao contra payload externo
+- [x] Conectar Inbox, Programacao, Vencimentos e Perfil ao seam inicial de contratos internos
+- [ ] Consolidar fixture sanitizada/replay do Crew Rotation apos primeira resposta validada no ambiente local
+- [x] Vincular testes de contrato ao harness de regressao da fonte Drake ativa
+- [x] Validar ponta a ponta o piloto de programacao pelo endpoint autenticado, referencia administrativa opaca e normalizacao para `ScheduleItem`
 
 ## Domain modeling
 
-- [ ] Definir entidades principais
+- [x] Definir entidades principais
 - [ ] Definir usuarios, perfis e setores
-- [ ] Definir agenda de embarque
-- [ ] Definir vencimentos de ASO
-- [ ] Definir vencimentos de treinamentos
+- [ ] Definir programacao de embarque
+- [x] Definir vencimentos de ASO
+- [x] Definir vencimentos de treinamentos
+- [x] Criar preview administrativo de Vencimentos por busca e referencia opaca de colaborador
+- [x] Centralizar selecao administrativa temporaria de colaborador no shell da Jornada para Programacao, Vencimentos e Atendimento
+- [x] Melhorar troca visual da selecao administrativa global e rolagem do menu de colaboradores
 - [ ] Definir comunicados
-- [ ] Definir espacos/setores de suporte
+- [x] Definir espacos/setores de suporte
+- [x] Definir assunto, titulo gerado, mensagem, politica de abertura e formulario como responsabilidades separadas no atendimento
+- [x] Implementar politica de abertura por assunto: conversa continua, solicitacao individual e chave de negocio
+- [x] Modelar fluxo de aprovacao vinculado a atendimento e formulario enviado
+- [x] Implementar MVP de aprovacao com regras administrativas, equipe aprovadora, fila operacional e decisao auditavel
+- [x] Registrar periodo de responsabilidade do atendimento para separar tempo de suporte, colaborador e aprovacao
+- [ ] Evoluir edicao visual de respostas como nova submissao versionada apos ajuste solicitado
 
 ## Product app
 
@@ -62,25 +105,267 @@
 - [x] Implementar baseline do modulo `auth` no backend
 - [x] Adicionar auditoria basica do `auth`
 - [x] Endurecer fluxo de recuperacao de senha
+- [x] Conectar login web ao backend real
+- [x] Validar login admin por email e senha
 - [ ] Definir verificacao de email e onboarding inicial
 - [ ] Consolidar endurecimento avancado da autenticacao
+- [x] Substituir cadastro publico em producao por convite administrativo com aceite e expiracao segura
+- [x] Limitar convite a sete dias, uso unico e hash persistido
+- [x] Implementar reenvio que invalida o convite anterior ainda ativo
+- [ ] Enviar convite para email corporativo ou pessoal por canal transacional, com adaptador e outbox; nunca expor o segredo fora de ambiente de desenvolvimento
+- [ ] Restringir alteracao de email a TI, com justificativa, auditoria e invalidacao de convite pendente
+- [ ] Enviar notificacao de seguranca por email para mudancas administrativas sensiveis
+- [x] Criar ciclo de vida administrativo da conta: pendente, ativa, bloqueada e desativada, com revogacao de sessoes
+- [ ] Bloquear duplicidade por email, matricula e identificador externo; exigir religacao explicita e auditada para conflitos
+- [ ] Proteger ultimo `ADMIN` global contra remocao, desativacao e auto-bloqueio acidental
+- [ ] Criar fluxo de elevacao a `ADMIN` por outro administrador, com motivo, dupla confirmacao e bloqueio de autoelevacao
+- [x] Exigir justificativa e auditoria transacional para bloqueio, desativacao e revogacao de sessoes
+- [x] Exigir categoria de motivo controlada e comentario sanitizado opcional nas mudancas sensiveis implementadas
+- [ ] Criar historico pesquisavel de alteracoes administrativas por usuario
+- [ ] Manter auditoria consultavel no Neo sem exportacao no primeiro pacote
+- [ ] Inativar aplicacao sem apagar grants, papeis ou historico; separar revogacao em massa como acao justificada
+- [x] Permitir revogacao administrativa de todas as sessoes sem bloquear a conta, com motivo e auditoria
+- [ ] Entregar notificacao de seguranca por email para essa revogacao
+- [ ] Criar revisao periodica de acessos com pendencias: semestral para papeis privilegiados e anual para os demais
+- [ ] Atribuir revisao inicial de acessos a TI e preparar escopo futuro para gestores
+- [ ] Definir retencao, desativacao e eventual anonimizacao de contas com historico
+- [ ] Migrar policies de modulo de roles globais legadas para papeis contextuais, preservando `ADMIN` apenas para administracao transversal
+- [x] Evoluir catalogo generico de papeis por aplicacao para papeis declarados e validados pelo modulo
+- [ ] Migrar roles globais legadas por modulo com revisao de acesso efetivo antes de remover cada fallback
+- [ ] Planejar e implementar MFA obrigatorio para `ADMIN` antes de ampliar a administracao para uso operacional
 - [x] Definir bootstrap seguro de admin
+- [x] Introduzir catalogo de aplicacoes e acesso por usuario no backend de auth
+- [x] Criar endpoints centrais de administracao de grants e papeis por aplicacao
+- [x] Separar administracao global do Neo da navegacao do Jornada
+- [x] Criar lateral administrativa propria para catalogo e acessos
+- [x] Expor gestao inicial de usuarios e concessao/revogacao de acesso por aplicacao
+- [x] Expor edicao explicita de papeis contextuais por aplicacao para usuarios administrados
+- [x] Criar tela de portal de apps apos login
+- [x] Criar `apps/help-hub` como frontend operacional separado do colaborador
+- [x] Manter `apps/api` e banco compartilhados nesta etapa da separacao
+- [x] Registrar ADR da separacao frontend-first entre colaborador e operacao
+- [x] Separar chunks de runtime do `apps/help-hub` para manter o entrypoint operacional leve
+- [x] Evoluir primeira camada de autorizacao contextual por aplicacao no frontend
+- [ ] Migrar policies de dominio do Focall e QuickForms para consultar papeis contextuais no backend, removendo o fallback legado
 - [x] Definir UX mobile-first
+- [x] Definir breakpoints criticos do produto
+- [ ] Validar ausencia de quebra visual em `360px`, `390px-430px`, `768px` e `1280px`
+- [x] Definir padrao de adaptacao entre navegacao mobile e desktop
+- [x] Refazer shell admin com linguagem visual dark-first mais premium
+- [x] Implementar modos claro e escuro no shell administrativo com tokens compartilhados
+- [x] Fixar fundo do shell administrativo e alinhar a linguagem espacial com o login
+- [x] Adicionar profundidade espacial com distribuicao de planetas, satelites e parallax sutil
+- [x] Adicionar flutuacao ambiente leve nos elementos do fundo sem pesar a interface
+- [x] Padronizar superficies do admin por camadas visuais compartilhadas
+- [x] Documentar design system oficial em `DESIGN.md` e `.impeccable/design.json`
+- [x] Definir `/inbox` como home logada do colaborador
+- [x] Limpar dashboard inicial e manter apenas Inbox acionavel
+- [x] Remover expansao de detalhes do Inbox e manter resumo com acao para modulo proprio
+- [x] Compactar Inbox e manter busca/filtros em uma secao propria da home do colaborador
+- [x] Agregar no Inbox o proximo embarque/desembarque, treinamentos ate 120 dias e respostas de atendimentos aguardando colaborador
+- [x] Alinhar altura desktop do conteudo com a sidebar e concentrar rolagem no corpo principal
+- [x] Implementar sidebar desktop recolhivel com hover, motion e trava persistida
+- [x] Transformar header da area logada em faixa compacta de orientacao com nome da pagina
+- [x] Manter card compacto de ferramentas no Inbox sem texto explicativo
+- [x] Remover nome/descricao das secoes de ferramentas e distribuir filtros sem scroll horizontal desnecessario
+- [x] Padronizar tamanho, fonte e largura dos botoes de filtro e acoes compactas
+- [x] Compactar botoes de acao das listas de Inbox e Vencimentos com o componente compartilhado `ListAction`
+- [x] Tornar filtros do Inbox e da Programacao funcionais no frontend
+- [x] Tornar busca do Inbox funcional no frontend
+- [x] Adicionar guarda automatizada no web contra uso inseguro de `event.currentTarget` dentro de updater funcional de estado
+- [x] Configurar Vitest, jsdom e Testing Library como suite rapida de regressao do frontend
+- [x] Separar fornecedores estaveis do bundle principal e usar imports por submodulo do React Aria
+- [x] Cobrir telas administrativas de atendimento com testes de digitacao, selecao e estabilidade de formularios
+- [x] Implementar tela de Vencimentos com filtros e busca funcionais no frontend
+- [x] Ajustar Vencimentos para lista operacional ordenada por prazo e responsiva como tabela
+- [x] Exibir todas as necessidades do trabalhador em Vencimentos, ordenadas por vencimento, com filtros e indicadores por icone
+- [x] Compactar filtros de Vencimentos no mobile e direcionar acoes de ASO/treinamento para abertura de Atendimento por setor/assunto
+- [x] Implementar primeira tela de Chat por setores com filtros, busca e conversa selecionavel
+- [x] Conectar Chat ao backend real com mensagens paginadas e envio persistido
+- [x] Adicionar cache leve de dados do Chat com `TanStack Query`
+- [x] Virtualizar lista de mensagens do Chat para proteger desempenho mobile
+- [x] Ocultar Chat do menu principal e redirecionar `/chat` para `/atendimento`
+- [x] Separar contato do colaborador em `/atendimento` da mesa operacional `/atendimentos`
+- [x] Fazer `/atendimento` respeitar a selecao administrativa temporaria de colaborador durante validacao por `ADMIN`, sem exigir relogin em outra conta
+- [x] Trocar abas por query string por rotas reais na area logada
+- [x] Iniciar tela detalhada da programacao do funcionario
+- [x] Ajustar Programacao para abrir em timeline unica no MVP
+- [x] Implementar primeira tela completa de Perfil do colaborador
+- [x] Implementar ajustes pessoais editaveis no Perfil sem sobrescrever dados oficiais de identidade/vinculo
+- [x] Organizar Perfil em abas para separar identidade, contato, acesso e documentos
+- [x] Definir diretriz de dados leves para frontend e API
+- [x] Definir contrato de fontes de opcoes remotas para campos `SELECT`
+- [x] Definir que endpoints externos nao serao chamados pelo navegador
+- [x] Definir allowlist, timeout, limite de resposta, cache e sanitizacao para adapters HTTP
+- [x] Criar dominio `OptionSource` com adapters `STATIC` e `HTTP_JSON`
+- [x] Criar endpoint interno de opcoes normalizadas com busca e cursor
+- [x] Integrar `optionSourceKey` ao schema/runtime de campos `SELECT`
+- [x] Cobrir fontes remotas com testes de contrato, seguranca, cache e limite de consulta
+- [x] Criar tela administrativa `/formularios/fontes` para cadastrar, editar e testar fontes de opcoes
+- [x] Parametrizar timeout HTTP das fontes remotas por ambiente
+- [x] Implementar recorte real por intervalo na programacao, limitado a 366 dias
+- [x] Ajustar janela padrao da programacao para cerca de 120 dias, de 60 dias atras ate 60 dias a frente
+- [ ] Implementar paginacao/cursor quando a fonte oferecer contrato apropriado ou o volume justificar persistencia local
+- [ ] Implementar filtros reais da programacao no backend alem do intervalo
+- [ ] Definir cache para dados pouco volateis do colaborador
+- [ ] Definir dashboard configuravel para gestor/admin como modulo separado
+- [ ] Persistir preferencias de widgets por usuario quando o dashboard gestor/admin existir
+- [ ] Filtrar widgets por perfil, setor e permissoes quando o dashboard gestor/admin existir
 - [ ] Definir estrategia PWA
 - [ ] Definir estrategia offline parcial
-- [ ] Definir navegacao principal inspirada no MyDrake
+- [x] Definir navegacao principal inspirada no MyDrake
+- [ ] Criar tela/ponto de transparencia de privacidade para o funcionario
+- [ ] Adicionar microcopy LGPD em fluxos sensiveis sem deixar a UX burocratica
 
 ## Real-time and support
 
-- [ ] Desenhar chat por setor
+- [x] Desenhar chat por setor
+- [x] Criar modelo persistente de conversas, mensagens e leitura
+- [x] Evoluir chat para participantes genericos com `ChatParticipant`
+- [x] Criar fundacao de atendimento/chamado com `SupportCase` e `SupportCaseEvent`
+- [x] Documentar separacao entre chat, atendimento e solicitacao
+- [x] Implementar eventos em tempo real com `Socket.IO` e Redis adapter
+- [x] Criar `SupportTeam` como equipe/fila configuravel, sem prender roteamento a enum de setor
+- [x] Preparar vinculo plugavel com integracoes/notificacoes por `SupportIntegrationLink`
+- [x] Criar portas/adapters para identidade de chat e notificacao de atendimento
+- [x] Documentar que o Jornada nao deve recriar ferramenta corporativa generica de conversa
+- [x] Definir Atendimentos como entrada unica para duvidas breves e demandas formais do funcionario
+- [x] Separar acesso ao app `ATENDIMENTO` de ownership do atendimento assumido
+- [x] Criar fundacao de papel contextual por app com `UserApplicationRole`
+- [x] Fechar vocabulario operacional: `setor` para funcionario e `equipe/fila` para operacao interna
+- [x] Definir backlog da equipe como entrada padrao do atendente
+- [x] Definir que transferencia preserva o mesmo atendimento e devolve ownership ao backlog da equipe de destino
+- [x] Definir abertura com setor obrigatorio, assunto opcional e formulario principal antes da conversa
+- [x] Definir `SupportCase` como agregador de SLA e conversa por ciclo de atendimento, com reuso apenas enquanto setor/assunto estiver ativo
+- [x] Planejar tres fases de atendimento: catalogo/roteamento, formularios e triagem inteligente
+- [x] Criar `SupportDepartment` como setor visivel para o funcionario
+- [x] Criar `SupportTopic` como assunto selecionavel por setor
+- [x] Criar `SupportRoutingRule` para rotear setor/assunto para equipe interna
+- [x] Criar `SupportTeamMember` para atendentes em multiplas equipes
+- [x] Criar fundacao de formularios por assunto com versao e campos tipados
+- [x] Desacoplar formulario do suporte com `FormDefinition`, `FormField` e vinculo `SupportTopicFormBinding`
+- [x] Preservar compatibilidade do suporte usando primeiro formulario vinculado ativo como formulario principal do assunto
+- [x] Criar modulo API `/forms` para listar e publicar formularios versionados fora do suporte
+- [x] Criar rota web `/formularios` para biblioteca central de formularios
+- [x] Restringir manutencao inicial de formularios a `ADMIN` e `TI`
+- [x] Substituir Formily por runtime proprio para renderizar formulario dinamico do funcionario
+- [x] Separar listagem de formularios da criacao/edicao
+- [x] Remover editor legado Formily Designable e rotas `/formularios/legacy/*`
+- [x] Registrar ADR da remocao de AntD, Formily e Designable do frontend
+- [x] Registrar ADR do criador proprio como fluxo oficial de formularios
+- [x] Persistir JSON tecnico de formulario em `FormDefinition.schema`, mantendo `FormField` como contrato tipado principal
+- [x] Implementar rascunho unico (`DRAFT`) e publicado unico (`ACTIVE`) por chave de formulario
+- [x] Bloquear nome visivel duplicado entre formularios logicos diferentes
+- [x] Exigir confirmacao com resumo de alteracoes antes de publicar formulario
+- [x] Retornar para biblioteca apos salvar/publicar formulario e destacar item atualizado com data
+- [x] Exibir rascunho/publicado correto como versao mais relevante na biblioteca de formularios
+- [x] Adicionar busca, coluna de criacao e ordenacao na biblioteca de formularios
+- [x] Remover chunk pesado do designer do frontend para proteger experiencia mobile
+- [x] Permitir condicionais simples de visibilidade e obrigatoriedade por campo
+- [x] Manter condicionais de campo no contrato tipado `visibleWhen`/`requiredWhen`
+- [x] Adicionar preview interativo sem publicacao no editor de formularios
+- [x] Revalidar condicionais do formulario no backend antes de salvar atendimento
+- [x] Criar editor principal sem `Designable` para reduzir acoplamento visual e risco de runtime no MVP
+- [x] Manter o criador oficial somente em `/formularios/novo` e `/formularios/:formKey/editar`
+- [x] Evoluir criador oficial com biblioteca de blocos, secoes, textos readonly e serializacao de layout versionado
+- [x] Adicionar wrappers React Aria para busca, data, selecao, combo pesquisavel e numero na trilha nova de formularios
+- [x] Implementar roteamento condicional por respostas do formulario
+- [x] Expor builder visual inicial de condicoes para regras de atendimento
+- [x] Criar fundacao de sugestao de triagem por regra/IA
+- [x] Implementar triagem local inicial por palavras-chave sem IA externa
+- [x] Conectar sugestao local de setor/assunto na abertura do atendimento
+- [x] Adaptar abertura de atendimento para setor, assunto e respostas estruturadas
+- [x] Ocultar equipe interna da abertura do funcionario
+- [x] Criar base de avaliacao do atendimento por `SupportRating`
+- [x] Seedar filas padrao de atendimento para Operacoes, Medicina, Treinamento, TI e Suporte interno
+- [x] Implementar backend inicial de abrir, listar, detalhar, atualizar, comentar e avaliar atendimento
+- [x] Implementar primeira tela web de Atendimentos para abrir demanda, acompanhar lista, comentar e avaliar atendimento resolvido
+- [x] Separar Atendimentos em visualizacoes de lista, criacao e detalhe para reduzir confusao no fluxo do funcionario
+- [x] Transformar detalhe de Atendimento em conversa de helpdesk com bolhas, eventos discretos e composer no rodape
+- [x] Permitir abertura por setor geral quando ainda nao houver assunto ativo no catalogo
+- [x] Adicionar fallback de catalogo administrativo para suporte/admin quando o catalogo publico estiver vazio
+- [x] Implementar encerramento e transferencia inicial pela tela de atendente
+- [x] Criar telas administrativas para setores manterem assuntos, equipes, membros, regras e formularios
+- [x] Criar endpoints administrativos protegidos para catalogo, equipes, membros, regras e formularios versionados
+- [x] Permitir cadastro de atendentes em multiplas equipes
+- [x] Separar catalogo ativo do funcionario do catalogo administrativo completo
+- [x] Adicionar endpoints seguros para excluir ou inativar configuracoes de atendimento sem quebrar vinculos
+- [x] Restringir manutencao de setores a administracao global
+- [x] Deixar Setores em modo somente leitura para `SUPPORT`, alinhando frontend e backend
+- [x] Exibir erro real, sessao encerrada e empty state correto no catalogo administrativo
+- [x] Cobrir catalogo administrativo com teste frontend de erro/token/filtro e teste backend positivo de listagem admin
+- [x] Tratar descricao, mensagens e futuros anexos de atendimento como potencialmente sensiveis
+- [x] Restringir atualizacao de atendimento por papel operacional e fila permitida
+- [x] Exigir motivo para transferencia, resolucao e fechamento
+- [x] Bloquear novas mensagens em atendimento fechado
+- [x] Exibir historico combinado de eventos e mensagens recentes no detalhe do atendimento
+- [x] Definir notificacoes externas apenas quando houver caso operacional claro
+- [x] Fechar MVP operacional de suporte/chat
+- [x] Projetar workspace flutuante do atendente no desktop, reaproveitando o detalhe atual e preservando fila/lista como ancora
+- [x] Criar rota/tela dedicada de detalhe do atendente para mobile, sem janela flutuante persistente
+- [x] Persistir estado do workspace do atendente na URL, com minimizacao e retomada segura apos `F5`
+- [x] Permitir minimizar e reabrir o workspace do atendente sem perder o rascunho da resposta durante a sessao
+- [x] Reforcar a fila operacional do atendente com indicadores compactos e navegacao anterior/proximo entre casos
+- [ ] Criar edicao fina/inativacao nas listas administrativas sem depender apenas de upsert
+- [x] Expor acoes de excluir/inativar e remover vinculo nas listas administrativas do frontend
+- [x] Expor acoes de editar/carregar item nas listas administrativas do frontend
+- [ ] Criar policy ABAC reutilizavel para escopo de catalogo por setor, equipe e membership
+- [x] Criar gestao administrativa backend de grants e papeis por aplicacao
+- [ ] Criar tela administrativa para grants e papeis por aplicacao
+- [ ] Substituir gradualmente dependencias de `User.roles` globais por papeis contextuais por app
+- [ ] Evoluir builder visual de condicoes com grupos, templates, previews e validacao por tipo de campo
+- [ ] Evoluir triagem local com sinonimos administraveis, confianca e metricas
+- [ ] Evoluir timeline com anexos e auditoria detalhada de exportacao/acesso
+- [x] Evoluir dominio de encerramento/transferencia com motivo tipificado, comentario complementar, SLA recalculado na transferencia e reabertura explicita em ate 7 dias
+- [x] Evoluir UX de encerramento/transferencia com indicadores de SLA, fila operacional e Inbox acionavel
+- [ ] Registrar `assumidoPor`, `assumidoEm`, `transferidoPor`, `transferidoEm`, `resolvidoPor` e `resolvidoEm` no dominio de atendimento
+- [x] Expor filas operacionais com backlog da equipe, meus atendimentos e sem responsavel tambem no backend com filtros dedicados
+- [ ] Consolidar a UX do workspace do atendente com contexto fechado por padrao, detalhe mais limpo e gestao secundaria recolhivel
+- [ ] Preparar visao Kanban operacional para atendentes com drag and drop sobre a mesma base de filas, sem duplicar regra fora do backend
+- [x] Materializar no backend o conceito de formulario principal por assunto sem depender implicitamente do primeiro vinculo ativo
+- [x] Materializar no frontend operacional a abertura por backlog da equipe como visao inicial do atendente
 - [ ] Definir grupos e espacos de equipe
-- [ ] Definir eventos em tempo real
 - [ ] Definir anexos, historico e auditoria
+
+## Ecosystem architecture
+
+- [x] Definir estrategia `monolith first` com separacao progressiva por bounded context
+- [x] Definir uso inicial de banco compartilhado com ownership logico por dominio
+- [x] Definir `Jornada` e `Atendimento` como apps distintos no ecossistema
+- [x] Documentar `auth` como portal de acesso ao ecossistema, sem tomar posse das regras dos apps
+- [x] Reduzir dependencias cruzadas entre `worker`, `support` e `forms` para preparar extracao futura
+- [x] Definir primeira projection/evento interno para conclusao de formulario no HelpHub
+- [x] Registrar ADR de monolito modular, apps separados no codigo e extracao por sinais objetivos
+- [x] Criar `DomainEventOutbox` para persistir eventos de dominio na mesma transacao do HelpHub
+- [x] Criar `FormRequest` independente com formulario publicado, prazo e contexto de origem
+- [x] Criar relay do outbox, consumidor idempotente e fila de falhas para o primeiro evento entre dominios
+- [x] Expor contratos HTTP autenticados para solicitar e responder QuickForms
+- [x] Persistir politica inicial de SLA por prioridade e calcular prazo do HelpHub na abertura do atendimento
+- [x] Renomear `apps/web` para `apps/jornada` e `apps/atendimento` para `apps/help-hub`
+- [x] Renomear o codigo de catalogo `ATENDIMENTO` para `HELP_HUB`, preservando grants existentes por migracao
+- [x] Criar `apps/quick-forms` com PWA, SSO e rotas reais de biblioteca, fontes e builder
+- [x] Consolidar o Hub como portal `/aplicativos` dentro do Jornada, sem quarto app, marca ou formulario de login
+- [x] Permitir que `ADMIN` mantenha o catalogo do Hub com nome, descricao, imagem, ordem, ativacao e destino nativo ou externo
+- [x] Registrar mudancas do catalogo em auditoria e manter o codigo do aplicativo imutavel para preservar grants e SSO
+- [x] Adicionar busca por nome e descricao e badge de tipo na pagina `/aplicativos`
+- [x] Redirecionar o acesso anonimo direto ao HelpHub e QuickForms para o login central do Jornada
+- [x] Emitir e consumir ticket SSO de uso unico, com hash, expiracao curta e auditoria sem token/URL
+- [x] Extrair `packages/frontend-core` para sessao, SSO, login, catalogo, tema, estilos e setup de teste compartilhados
+- [x] Consolidar o frame visual compartilhado do shell em `packages/frontend-core` para Jornada, HelpHub e QuickForms
+- [x] Consolidar Jornada, Focall e QuickForms em um unico frontend Neo por modulos lazy
+- [x] Criar registry de modulos nativos e remover SSO entre rotas internas
+- [x] Migrar o codigo mantido de Focall e QuickForms para `apps/jornada/src/modules`
+- [x] Validar rotas diretas, Hub, grants e um unico PWA antes de remover apps legados
+- [ ] Remover `apps/help-hub` e `apps/quick-forms` apos a validacao da migracao
+- [x] Mover telas, clientes, componentes e testes de atendimento para `apps/help-hub`
+- [x] Mover telas, clientes, componentes e testes de formularios para `apps/quick-forms`
+- [x] Extrair `AppShellLayout` para o core com porta opcional de workspace de suporte
+- [ ] Definir criterio objetivo de extracao de `support` para servico proprio
 
 ## Operations
 
-- [ ] Definir observabilidade
-- [ ] Definir se entra Sentry desde a base 1 ou na fase seguinte
+- [x] Definir observabilidade
+- [ ] Implementar Sentry ou alternativa apenas apos definir DSN, ambiente, retencao, scrubber LGPD e filtro de query string
 - [x] Definir retries e dead-letter
 - [ ] Definir processo de deploy
 - [ ] Definir homologacao e producao
