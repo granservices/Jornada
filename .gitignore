@@ -13,6 +13,9 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+.codex-*.log
+apps/api/.codex-*.log
+apps/api/tmp-*
 dist/
 dev-dist/
 coverage/
