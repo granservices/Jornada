@@ -2,17 +2,24 @@
   "name": "jornada-monorepo",
   "version": "0.1.0",
   "private": true,
-  "description": "Monorepo do Jornada, plataforma operacional mobile-first da Gran Services.",
+  "description": "Monorepo do Jornada, plataforma operacional mobile-first da GranServices.",
   "workspaces": [
-    "apps/*"
+    "apps/*",
+    "packages/*"
   ],
   "scripts": {
     "infra:up": "powershell -ExecutionPolicy Bypass -File ./scripts/start-local-infra.ps1",
+    "dev": "powershell -ExecutionPolicy Bypass -File ./scripts/start-local-dev.ps1",
+    "test:local-dev": "powershell -ExecutionPolicy Bypass -File ./scripts/test-start-local-dev.ps1",
     "dev:api": "npm run start:dev --workspace @jornada/api",
-    "dev:web": "npm run dev --workspace @jornada/web",
+    "dev:jornada": "npm run dev --workspace @jornada/jornada",
     "build:api": "npm run build --workspace @jornada/api",
-    "build:web": "npm run build --workspace @jornada/web",
+    "build:jornada": "npm run build --workspace @jornada/jornada",
     "lint:api": "npm run lint --workspace @jornada/api",
+    "test:jornada": "npm run test --workspace @jornada/jornada",
+    "test:frontend-core": "npm run test --workspace @jornada/frontend-core",
+    "typecheck:frontend-core": "npm run typecheck --workspace @jornada/frontend-core",
+    "test:jornada:guards": "npm run test:guards --workspace @jornada/jornada",
     "test:api": "npm run test --workspace @jornada/api",
     "test:api:cov": "npm run test:cov --workspace @jornada/api",
     "test:api:e2e": "npm run test:e2e --workspace @jornada/api",
