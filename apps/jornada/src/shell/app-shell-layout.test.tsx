@@ -156,8 +156,8 @@ describe('AppShellLayout', () => {
   it('hides operational navigation when the session only has access to Jornada', () => {
     renderShell('/inbox', employeeSession);
 
-    expect(screen.queryByRole('link', { name: 'Atendimentos' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: 'Formularios' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Fila Focall' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'QuickForms' })).not.toBeInTheDocument();
     expect(screen.getAllByRole('link', { name: 'Inbox' }).length).toBeGreaterThan(0);
     expect(screen.getAllByRole('link', { name: 'Perfil' }).length).toBeGreaterThan(0);
   });
@@ -165,8 +165,8 @@ describe('AppShellLayout', () => {
   it('shows only atendimento navigation in the atendimento experience', () => {
     renderShell('/atendimentos', adminSession, 'atendimento');
 
-    expect(screen.getAllByRole('link', { name: 'Atendimentos' }).length).toBeGreaterThan(0);
-    expect(screen.queryByRole('link', { name: 'Formularios' })).not.toBeInTheDocument();
+    expect(screen.getAllByRole('link', { name: 'Fila Focall' }).length).toBeGreaterThan(0);
+    expect(screen.queryByRole('link', { name: 'QuickForms' })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Inbox' })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Programação' })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Vencimentos' })).not.toBeInTheDocument();
@@ -175,8 +175,8 @@ describe('AppShellLayout', () => {
   it('shows only form navigation in the QuickForms experience', () => {
     renderShell('/formularios', adminSession, 'quick-forms');
 
-    expect(screen.getAllByRole('link', { name: 'Formularios' }).length).toBeGreaterThan(0);
-    expect(screen.queryByRole('link', { name: 'Atendimentos' })).not.toBeInTheDocument();
+    expect(screen.getAllByRole('link', { name: 'QuickForms' }).length).toBeGreaterThan(0);
+    expect(screen.queryByRole('link', { name: 'Fila Focall' })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Inbox' })).not.toBeInTheDocument();
   });
 

@@ -12,8 +12,12 @@ import { HealthModule } from './health/health.module';
 import { DrakeModule } from './integrations/drake/drake.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { BoardingScheduleModule } from './modules/boarding-schedule/boarding-schedule.module';
+import { ChatModule } from './modules/chat/chat.module';
 import { EmployeesModule } from './modules/employees/employees.module';
 import { ExpiringRequirementsModule } from './modules/expiring-requirements/expiring-requirements.module';
+import { FormsModule } from './modules/forms/forms.module';
+import { SispatModule } from './modules/sispat/sispat.module';
+import { SupportModule } from './modules/support/support.module';
 
 @Module({
   imports: [
@@ -70,8 +74,12 @@ import { ExpiringRequirementsModule } from './modules/expiring-requirements/expi
     EmployeesModule,
     BoardingScheduleModule,
     ExpiringRequirementsModule,
+    SispatModule,
     DrakeModule,
     AuthModule,
+    ChatModule,
+    FormsModule,
+    SupportModule,
   ],
   providers: [
     {

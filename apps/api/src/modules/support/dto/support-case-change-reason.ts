@@ -1,0 +1,27 @@
+export enum SupportTransferReason {
+  WRONG_TEAM = 'WRONG_TEAM',
+  NEEDS_SPECIALIST = 'NEEDS_SPECIALIST',
+  NEEDS_APPROVAL = 'NEEDS_APPROVAL',
+  INSUFFICIENT_INFORMATION = 'INSUFFICIENT_INFORMATION',
+  OTHER = 'OTHER',
+}
+
+export enum SupportResolutionReason {
+  RESOLVED = 'RESOLVED',
+  DUPLICATE = 'DUPLICATE',
+  REQUESTER_CANCELLED = 'REQUESTER_CANCELLED',
+  OUT_OF_SCOPE = 'OUT_OF_SCOPE',
+  NO_REQUESTER_RETURN = 'NO_REQUESTER_RETURN',
+  OTHER = 'OTHER',
+}
+
+export enum SupportReopenReason {
+  REQUESTER_NOT_RESOLVED = 'REQUESTER_NOT_RESOLVED',
+  REQUESTER_HAS_MORE_INFORMATION = 'REQUESTER_HAS_MORE_INFORMATION',
+  OTHER = 'OTHER',
+}
+
+export type SupportCaseChangeReason =
+  | SupportTransferReason
+  | SupportResolutionReason
+  | SupportReopenReason;

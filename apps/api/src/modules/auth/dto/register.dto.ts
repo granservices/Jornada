@@ -1,6 +1,7 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsEmail,
+  IsOptional,
   IsString,
   IsStrongPassword,
   MaxLength,
@@ -17,6 +18,15 @@ export class RegisterDto {
   @MinLength(3)
   @MaxLength(120)
   fullName!: string;
+
+  @ApiPropertyOptional({
+    example: '000123',
+    description: 'Matricula operacional do colaborador, quando ja conhecida.',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(40)
+  employeeId?: string;
 
   @ApiProperty({
     minLength: 8,

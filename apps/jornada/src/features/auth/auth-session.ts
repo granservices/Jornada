@@ -109,6 +109,15 @@ export function persistAuthSession(
   emitChange();
 }
 
+export function replaceAuthSession(snapshot: AuthSessionSnapshot) {
+  if (!isBrowser()) {
+    return;
+  }
+
+  const persistent = Boolean(window.localStorage.getItem(LOCAL_STORAGE_KEY));
+  persistAuthSession(snapshot, { persistent });
+}
+
 export function clearAuthSession() {
   if (!isBrowser()) {
     return;

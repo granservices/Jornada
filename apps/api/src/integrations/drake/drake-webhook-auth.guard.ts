@@ -12,6 +12,14 @@ export class DrakeWebhookAuthGuard implements CanActivate {
   constructor(private readonly configService: ConfigService) {}
 
   canActivate(context: ExecutionContext): boolean {
+    const authDisabled = this.configService.get<boolean>(
+      'DRAKE_WEBHOOK_AUTH_DISABLED',
+    );
+
+    if (authDisabled) {
+      return true;
+    }
+
     const request = context.switchToHttp().getRequest<Request>();
     const expectedToken = this.configService.getOrThrow<string>(
       'DRAKE_WEBHOOK_BEARER_TOKEN',

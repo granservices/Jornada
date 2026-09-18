@@ -78,6 +78,22 @@ Registro de execucao de uma importacao, webhook ou sincronizacao de Fonte Extern
 
 _Avoid_: log bruto, payload externo salvo como trilha oficial.
 
+### IntakeEvent
+
+Evento externo recebido pelo mini app de intake operacional para analise antes
+de qualquer reaproveitamento pelo Jornada.
+
+Regras:
+
+- representa o recebimento bruto indexado, nao o dado operacional confiavel
+- pode ser classificado como pendencia de qualificacao, programacao logistica
+  ou desconhecido
+- preserva raw payload para auditoria e usa indice analitico para consulta
+- nao substitui `ScheduleItem`, `RequirementExpiration` ou `InboxItem`
+
+_Avoid_: tratar como cadastro de colaborador, contrato interno do Jornada ou
+mensagem enviada de fato ao colaborador.
+
 ### IntegrationSource
 
 Nome tecnico futuro para representar uma Fonte Externa quando ela precisar ser cadastrada, sincronizada ou auditada.

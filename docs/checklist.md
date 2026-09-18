@@ -369,3 +369,7 @@
 - [x] Definir retries e dead-letter
 - [ ] Definir processo de deploy
 - [ ] Definir homologacao e producao
+- [x] Criar mini app `apps/intake-api` para intake operacional segregado com Docker Compose, endpoint unico e SQLite analitico
+- [x] Publicar `apps/intake-api` em producao com token proprio, volume persistente e borda SSL em `https://jornada.granhub.com.br/api/intake`
+- [x] Habilitar modo diagnostico temporario do intake com CORS aberto, token opcional e captura de rotas Drake legadas
+- [ ] Apontar a origem para `POST /api/intake/events` apos validacao do health e do token

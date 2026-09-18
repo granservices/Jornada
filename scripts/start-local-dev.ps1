@@ -63,8 +63,22 @@ function Stop-JornadaLocalPort {
   }
 }
 
+function Stop-JornadaStrayFrontendProcesses {
+  $processes = @(Get-CimInstance Win32_Process -Filter "Name = 'node.exe'" -ErrorAction SilentlyContinue |
+    Where-Object {
+      $_.CommandLine -like "*$repoRoot*" -and
+      $_.CommandLine -match 'vite[\\/]bin[\\/]vite\.js'
+    })
+
+  foreach ($process in $processes) {
+    Write-Host "Reiniciando Neo local antigo (PID $($process.ProcessId))..."
+    taskkill.exe /PID $process.ProcessId /T /F | Out-Null
+  }
+}
+
 Stop-JornadaLocalPort -Port 3004 -Label 'API'
 Stop-JornadaLocalPort -Port 3006 -Label 'Neo'
+Stop-JornadaStrayFrontendProcesses
 
 & (Join-Path $PSScriptRoot 'start-local-infra.ps1')
 

@@ -1,0 +1,15 @@
+FROM jornada-api-jornada-api:latest
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV PORT=3014
+
+COPY dist ./dist
+COPY package.json ./package.json
+
+RUN mkdir -p /app/data/raw-events
+
+EXPOSE 3014
+
+CMD ["node", "dist/main"]

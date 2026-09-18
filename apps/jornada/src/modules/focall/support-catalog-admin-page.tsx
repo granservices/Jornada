@@ -9,6 +9,7 @@ import {
 } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
+  ClipboardCheck,
   ClipboardList,
   GitBranch,
   Plus,
@@ -44,7 +45,7 @@ import {
 } from './support-api';
 import { cn } from '../../lib/cn';
 
-type AdminPage = 'hub' | 'departments' | 'topics' | 'teams' | 'routing' | 'forms';
+type AdminPage = 'hub' | 'departments' | 'topics' | 'teams' | 'routing' | 'approvals' | 'forms';
 type CatalogStatus = 'ACTIVE' | 'INACTIVE';
 type CatalogAdminData = Awaited<ReturnType<typeof listSupportCatalogAdmin>>;
 type CatalogAdminDepartment = CatalogAdminData['departments'][number];
@@ -114,6 +115,13 @@ const configPages: Array<{
     description: 'Roteamento para filas internas',
     to: '/atendimentos/configuracao/regras',
     icon: GitBranch,
+  },
+  {
+    id: 'approvals',
+    label: 'Aprovações',
+    description: 'Fluxos e equipes aprovadoras',
+    to: '/atendimentos/configuracao/aprovacoes',
+    icon: ClipboardCheck,
   },
 ];
 
@@ -427,13 +435,14 @@ function ConfigToolbar({
     topics: 'Buscar assunto',
     teams: 'Buscar equipe',
     routing: 'Buscar regra',
+    approvals: 'Buscar aprovacao',
     forms: 'Buscar formulario',
   };
 
   return (
     <section className="rounded-[6px] border border-[var(--admin-border)] bg-[var(--admin-surface-1)] p-2.5 text-[var(--admin-text-primary)] shadow-[var(--admin-shadow)] backdrop-blur-[2px]">
       <div className="grid gap-2 lg:grid-cols-[minmax(0,1fr)_minmax(200px,260px)] lg:items-center">
-        <div className="grid min-w-0 grid-cols-2 gap-1.5 sm:grid-cols-5">
+        <div className="grid min-w-0 grid-cols-2 gap-1.5 sm:grid-cols-3 xl:grid-cols-5">
           {configPages.map(({ id, label, to, icon: Icon }) => (
             <NavLink
               key={id}
@@ -520,11 +529,12 @@ function ConfigHub({
   teams: CatalogAdminTeam[];
   routingRules: CatalogAdminRoutingRule[];
 }) {
-  const counts: Record<Exclude<AdminPage, 'hub'>, number> = {
+  const counts: Record<Exclude<AdminPage, 'hub'>, string | number> = {
     departments: departments.length,
     topics: topics.length,
     teams: teams.length,
     routing: routingRules.length,
+    approvals: 'Abrir',
     forms: topics.reduce((total, topic) => total + topic.forms.length, 0),
   };
 

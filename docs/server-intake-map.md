@@ -50,6 +50,44 @@ Rota de health:
 
 - `GET /api/health`
 
+## Novo intake operacional
+
+O app novo de intake fica em `apps/intake-api` e deve ser publicado como servico
+separado do receptor historico quando entrar em producao.
+
+Publicacao esperada:
+
+- Container: `jornada-intake-api`
+- Diretorio da aplicacao no servidor: `/opt/jornada-intake-api`
+- Porta interna/local: `127.0.0.1:3014`
+- URL publica com SSL: `https://jornada.granhub.com.br/api/intake`
+- Borda publica: OpenLiteSpeed em `80/443`, com contexto `/api/intake` proxy para `127.0.0.1:3014`
+- Modo diagnostico temporario: OpenLiteSpeed tambem pode rotear `/api/integrations/drake` para `127.0.0.1:3014`, e `INTAKE_AUTH_DISABLED=true` pode aceitar chamadas sem Bearer token ate a origem ser confirmada.
+
+Nao usar `http://46.202.146.234:3014` como URL de integracao externa. A porta
+3014 existe apenas para o proxy local do servidor.
+
+Rota unica planejada:
+
+- `POST /api/intake/events`
+
+Rotas de analise:
+
+- `GET /api/intake/events`
+- `GET /api/intake/summary`
+- `GET /api/intake/qualification-preview?days=15`
+
+Rotas legadas aceitas temporariamente para diagnostico:
+
+- `POST /api/integrations/drake/employees`
+- `POST /api/integrations/drake/expiring-requirements`
+- `POST /api/integrations/drake/boarding-schedule`
+
+Persistencia planejada:
+
+- raw payload em `INTAKE_STORAGE_DIR`
+- indice analitico em SQLite por `INTAKE_SQLITE_PATH`
+
 Captura temporaria de debug:
 
 - `POST /`
@@ -276,4 +314,3 @@ Melhoria recomendada:
 7. Ver rejeitados da raiz em `data/webhooks/root-captures/_rejected.ndjson`.
 8. Ver `docker logs jornada-api`.
 9. So depois olhar Nginx ou outras camadas.
-

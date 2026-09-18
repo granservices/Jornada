@@ -20,6 +20,7 @@ import {
   LockKeyhole,
   LogOut,
   MessageSquare,
+  MoreHorizontal,
   PanelsTopLeft,
   Send,
   TicketCheck,
@@ -65,12 +66,15 @@ import { BrandMark } from './brand-mark';
 
 type ModuleApplicationCode = 'JORNADA' | 'HELP_HUB' | 'QUICK_FORMS';
 type ShellExperience = 'worker' | 'atendimento' | 'quick-forms' | 'administracao';
+type NavigationGroup = 'routine' | 'relationship' | 'account' | 'operation' | 'configuration' | 'administration';
 
 const navigation: Array<{
   label: string;
   description: string;
   icon: typeof Inbox;
   to: string;
+  group: NavigationGroup;
+  mobilePriority?: 'primary' | 'secondary';
   applicationCode?: ModuleApplicationCode;
   experience?: 'administracao';
   roles?: string[];
@@ -80,6 +84,7 @@ const navigation: Array<{
     description: 'O que pede atencao',
     icon: Inbox,
     to: '/inbox',
+    group: 'routine',
     applicationCode: 'JORNADA',
   },
   {
@@ -87,6 +92,7 @@ const navigation: Array<{
     description: 'Embarques',
     icon: CalendarRange,
     to: '/programacao',
+    group: 'routine',
     applicationCode: 'JORNADA',
   },
   {
@@ -94,6 +100,7 @@ const navigation: Array<{
     description: 'ASO e cursos',
     icon: ClipboardCheck,
     to: '/vencimentos',
+    group: 'routine',
     applicationCode: 'JORNADA',
   },
   {
@@ -101,6 +108,8 @@ const navigation: Array<{
     description: 'Informacoes operacionais',
     icon: Megaphone,
     to: '/comunicados',
+    group: 'relationship',
+    mobilePriority: 'secondary',
     applicationCode: 'JORNADA',
   },
   {
@@ -108,13 +117,15 @@ const navigation: Array<{
     description: 'Fale com um setor',
     icon: MessageSquare,
     to: '/atendimento',
+    group: 'relationship',
     applicationCode: 'JORNADA',
   },
   {
-    label: 'Atendimentos',
+    label: 'Fila Focall',
     description: 'Resolver demandas',
     icon: TicketCheck,
     to: '/atendimentos',
+    group: 'operation',
     applicationCode: 'HELP_HUB',
     roles: ['ADMIN', 'SUPPORT', 'TI', 'MEDICINE', 'OPERATIONS'],
   },
@@ -123,6 +134,7 @@ const navigation: Array<{
     description: 'Decidir solicitações',
     icon: ClipboardList,
     to: '/atendimentos/aprovacoes',
+    group: 'operation',
     applicationCode: 'HELP_HUB',
     roles: ['ADMIN', 'SUPPORT', 'TI', 'MEDICINE', 'OPERATIONS'],
   },
@@ -131,14 +143,27 @@ const navigation: Array<{
     description: 'Catalogo e regras',
     icon: Settings2,
     to: '/atendimentos/configuracao',
+    group: 'configuration',
+    mobilePriority: 'secondary',
     applicationCode: 'HELP_HUB',
     roles: ['ADMIN', 'SUPPORT'],
   },
   {
-    label: 'Formularios',
+    label: 'QuickForms',
     description: 'Biblioteca e versoes',
     icon: ClipboardList,
     to: '/formularios',
+    group: 'operation',
+    applicationCode: 'QUICK_FORMS',
+    roles: ['ADMIN', 'TI'],
+  },
+  {
+    label: 'Fontes',
+    description: 'Opcoes reutilizaveis',
+    icon: Search,
+    to: '/formularios/fontes',
+    group: 'configuration',
+    mobilePriority: 'secondary',
     applicationCode: 'QUICK_FORMS',
     roles: ['ADMIN', 'TI'],
   },
@@ -147,6 +172,7 @@ const navigation: Array<{
     description: 'Dados e acesso',
     icon: UserRound,
     to: '/perfil',
+    group: 'account',
     applicationCode: 'JORNADA',
   },
   {
@@ -154,6 +180,7 @@ const navigation: Array<{
     description: 'Administracao Neo',
     icon: Settings2,
     to: '/administracao',
+    group: 'administration',
     experience: 'administracao',
     roles: ['ADMIN'],
   },
@@ -162,6 +189,7 @@ const navigation: Array<{
     description: 'Catalogo central',
     icon: PanelsTopLeft,
     to: '/administracao/aplicativos',
+    group: 'administration',
     experience: 'administracao',
     roles: ['ADMIN'],
   },
@@ -170,10 +198,20 @@ const navigation: Array<{
     description: 'Pessoas e permissoes',
     icon: UsersRound,
     to: '/administracao/usuarios',
+    group: 'administration',
     experience: 'administracao',
     roles: ['ADMIN'],
   },
 ];
+
+const navigationGroupLabels: Record<NavigationGroup, string> = {
+  routine: 'Rotina',
+  relationship: 'Relacionamento',
+  account: 'Conta',
+  operation: 'Operação',
+  configuration: 'Configuração',
+  administration: 'Administração',
+};
 
 const tabLabels: Record<string, string> = {
   inbox: 'Inbox',
@@ -341,6 +379,7 @@ export function AppShellLayout({ experience = 'worker' }: { experience?: ShellEx
     sidebarLockModeFromStorage(),
   );
   const [sidebarHovered, setSidebarHovered] = useState(false);
+  const [mobileMoreOpen, setMobileMoreOpen] = useState(false);
   const user = session?.user;
   const currentSection = sectionKeyFromPath(location.pathname);
   const activeModuleCode = experienceApplicationCode(experience);
@@ -365,6 +404,13 @@ export function AppShellLayout({ experience = 'worker' }: { experience?: ShellEx
         userRoles: user?.roles,
       }),
     );
+  const groupedNavigation = groupNavigationItems(visibleNavigation);
+  const primaryMobileNavigation = visibleNavigation.filter(
+    (item) => item.mobilePriority !== 'secondary',
+  );
+  const secondaryMobileNavigation = visibleNavigation.filter(
+    (item) => item.mobilePriority === 'secondary',
+  );
   const isSupportOperator = isSupportOperatorUser(user);
   const sidebarExpanded =
     sidebarLockMode === 'open' ||
@@ -566,16 +612,30 @@ export function AppShellLayout({ experience = 'worker' }: { experience?: ShellEx
               </div>
 
               <nav className="admin-scrollbar mt-4 flex flex-1 flex-col gap-1 overflow-y-auto pr-1">
-                {visibleNavigation.map(({ label, description, icon: Icon, to }) => (
-                  <NavItem
-                    key={label}
-                    label={label}
-                    description={description}
-                    icon={<Icon size={18} strokeWidth={2} />}
-                    to={appendSearchToPath(to, workspaceSearch)}
-                    active={isNavPathActive(location.pathname, to)}
-                    expanded={sidebarExpanded}
-                  />
+                {groupedNavigation.map((group, groupIndex) => (
+                  <div
+                    key={group.key}
+                    className={cn(groupIndex > 0 ? (sidebarExpanded ? 'mt-3' : 'mt-2') : '')}
+                  >
+                    {sidebarExpanded ? (
+                      <p className="px-2 pb-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-[var(--admin-text-muted)]">
+                        {navigationGroupLabels[group.key]}
+                      </p>
+                    ) : null}
+                    <div className="flex flex-col gap-1">
+                      {group.items.map(({ label, description, icon: Icon, to }) => (
+                        <NavItem
+                          key={to}
+                          label={label}
+                          description={description}
+                          icon={<Icon size={18} strokeWidth={2} />}
+                          to={appendSearchToPath(to, workspaceSearch)}
+                          active={isNavPathActive(location.pathname, to)}
+                          expanded={sidebarExpanded}
+                        />
+                      ))}
+                    </div>
+                  </div>
                 ))}
                 <NavItem
                   label="Modulos"
@@ -742,17 +802,45 @@ export function AppShellLayout({ experience = 'worker' }: { experience?: ShellEx
           ) : null}
 
           <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--admin-border)] bg-[color:var(--admin-shell)] px-2 py-2 backdrop-blur-[2px] lg:hidden">
+            {mobileMoreOpen && secondaryMobileNavigation.length ? (
+              <div className="mx-auto mb-2 max-w-xl rounded-[6px] border border-[var(--admin-border)] bg-[var(--admin-surface-1)] p-1 shadow-[var(--admin-shadow)]">
+                {secondaryMobileNavigation.map(({ label, description, icon: Icon, to }) => (
+                  <NavLink
+                    key={to}
+                    to={appendSearchToPath(to, workspaceSearch)}
+                    onClick={() => setMobileMoreOpen(false)}
+                    className={({ isActive }) =>
+                      cn(
+                        'flex items-center gap-2 rounded-[5px] border px-2 py-2 text-left transition',
+                        isActive || isNavPathActive(location.pathname, to)
+                          ? 'border-[var(--admin-border-strong)] bg-[var(--admin-panel-active)] text-[var(--admin-text-primary)]'
+                          : 'border-transparent text-[var(--admin-text-secondary)] hover:border-[var(--admin-border)] hover:bg-[var(--admin-surface-2)] hover:text-[var(--admin-text-primary)]',
+                      )
+                    }
+                  >
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[4px] border border-[var(--admin-border)] bg-[var(--admin-surface-2)]">
+                      <Icon size={17} />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block truncate text-[12px] font-semibold">{label}</span>
+                      <span className="block truncate text-[10px] text-current/58">{description}</span>
+                    </span>
+                  </NavLink>
+                ))}
+              </div>
+            ) : null}
             <div
               className={cn(
                 'mx-auto grid max-w-xl gap-1',
-                visibleNavigation.length >= 6 ? 'grid-cols-6' : 'grid-cols-5',
+                secondaryMobileNavigation.length ? 'grid-cols-5' : primaryMobileNavigation.length >= 6 ? 'grid-cols-6' : 'grid-cols-5',
               )}
             >
-              {visibleNavigation.map(({ label, icon: Icon, to }) => (
+              {primaryMobileNavigation.map(({ label, icon: Icon, to }) => (
                 <NavLink
-                  key={label}
+                  key={to}
                   to={appendSearchToPath(to, workspaceSearch)}
                   end
+                  onClick={() => setMobileMoreOpen(false)}
                   className={({ isActive }) =>
                     cn(
                       'flex min-h-13 flex-col items-center justify-center gap-1 rounded-[6px] border px-1 text-[10px] font-medium transition',
@@ -766,6 +854,23 @@ export function AppShellLayout({ experience = 'worker' }: { experience?: ShellEx
                   <span>{label}</span>
                 </NavLink>
               ))}
+              {secondaryMobileNavigation.length ? (
+                <button
+                  type="button"
+                  onClick={() => setMobileMoreOpen((current) => !current)}
+                  aria-expanded={mobileMoreOpen}
+                  aria-label="Mais opções"
+                  className={cn(
+                    'flex min-h-13 flex-col items-center justify-center gap-1 rounded-[6px] border px-1 text-[10px] font-medium transition',
+                    mobileMoreOpen
+                      ? 'border-[var(--admin-border-strong)] bg-[var(--admin-panel-active)] text-[var(--admin-text-primary)] shadow-[var(--admin-shadow)]'
+                      : 'border-transparent text-[var(--admin-text-muted)] hover:border-[var(--admin-border)] hover:bg-[var(--admin-surface-2)] hover:text-[var(--admin-text-primary)]',
+                  )}
+                >
+                  <MoreHorizontal size={18} />
+                  <span>Mais</span>
+                </button>
+              ) : null}
             </div>
           </nav>
         </div>
@@ -938,6 +1043,23 @@ function appendSearchToPath(path: string, search: string) {
   }
 
   return `${path}${search}`;
+}
+
+function groupNavigationItems(items: Array<(typeof navigation)[number]>) {
+  return items.reduce<Array<{ key: NavigationGroup; items: Array<(typeof navigation)[number]> }>>(
+    (groups, item) => {
+      const group = groups.find((current) => current.key === item.group);
+
+      if (group) {
+        group.items.push(item);
+        return groups;
+      }
+
+      groups.push({ key: item.group, items: [item] });
+      return groups;
+    },
+    [],
+  );
 }
 
 function supportWorkspaceSearchFromLocation(search: string, isSupportOperator: boolean) {

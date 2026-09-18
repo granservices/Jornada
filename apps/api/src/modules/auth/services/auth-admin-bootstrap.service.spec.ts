@@ -1,4 +1,5 @@
 import { Role } from '@prisma/client';
+import type { AuthApplicationAccessService } from './auth-application-access.service';
 import { AuthAdminBootstrapService } from './auth-admin-bootstrap.service';
 import { PasswordHasherService } from './password-hasher.service';
 
@@ -8,23 +9,23 @@ describe('AuthAdminBootstrapService', () => {
   let prisma: {
     user: {
       findUnique: jest.Mock<Promise<unknown>, [unknown]>;
-      create: jest.Mock<
-        Promise<unknown>,
-        [
-          {
-            data: {
-              email: string;
-              fullName: string;
-              passwordHash: string;
-              roles: Role[];
-            };
-          },
+        create: jest.Mock<
+          Promise<unknown>,
+          [
+            {
+              data: {
+                email: string;
+                passwordHash: string;
+                roles: Role[];
+              };
+            },
         ]
       >;
       update: jest.Mock<Promise<unknown>, [unknown]>;
     };
   };
   let passwordHasher: { hash: jest.Mock };
+  let applicationAccess: { grantAdminDefaultApps: jest.Mock };
 
   beforeEach(() => {
     configService = {
@@ -48,7 +49,6 @@ describe('AuthAdminBootstrapService', () => {
             {
               data: {
                 email: string;
-                fullName: string;
                 passwordHash: string;
                 roles: Role[];
               };
@@ -61,16 +61,21 @@ describe('AuthAdminBootstrapService', () => {
     passwordHasher = {
       hash: jest.fn().mockResolvedValue('hashed-password'),
     };
+    applicationAccess = {
+      grantAdminDefaultApps: jest.fn(),
+    };
 
     service = new AuthAdminBootstrapService(
       configService as never,
       prisma as never,
       passwordHasher as PasswordHasherService,
+      applicationAccess as unknown as AuthApplicationAccessService,
     );
   });
 
   it('creates the admin user when it does not exist', async () => {
     prisma.user.findUnique.mockResolvedValue(null);
+    prisma.user.create.mockResolvedValue({ id: 'user-created' });
 
     await service.onApplicationBootstrap();
 
@@ -80,10 +85,19 @@ describe('AuthAdminBootstrapService', () => {
 
     expect(createArg?.data).toMatchObject({
       email: 'admin@granservices.com.br',
-      fullName: 'Administrador Jornada',
       passwordHash: 'hashed-password',
       roles: [Role.ADMIN],
     });
+    expect(createArg?.data).toMatchObject({
+      person: {
+        create: {
+          fullName: 'Administrador Jornada',
+        },
+      },
+    });
+    expect(applicationAccess.grantAdminDefaultApps).toHaveBeenCalledWith(
+      'user-created',
+    );
   });
 
   it('adds ADMIN role when the user exists without it', async () => {
@@ -101,5 +115,8 @@ describe('AuthAdminBootstrapService', () => {
         roles: [Role.EMPLOYEE, Role.ADMIN],
       },
     });
+    expect(applicationAccess.grantAdminDefaultApps).toHaveBeenCalledWith(
+      'user-1',
+    );
   });
 });

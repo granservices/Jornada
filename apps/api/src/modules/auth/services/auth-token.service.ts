@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Role, UserStatus } from '@prisma/client';
-import { randomBytes } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
 
 type AccessTokenPayload = {
   sub: string;
   email: string;
+  employeeId?: string | null;
   roles: Role[];
   status: UserStatus;
 };
@@ -20,5 +21,9 @@ export class AuthTokenService {
 
   generateOpaqueToken() {
     return randomBytes(48).toString('hex');
+  }
+
+  hashOpaqueToken(value: string) {
+    return createHash('sha256').update(value).digest('hex');
   }
 }

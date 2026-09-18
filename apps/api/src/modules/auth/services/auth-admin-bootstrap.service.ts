@@ -2,6 +2,7 @@ import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Role } from '@prisma/client';
 import { PrismaService } from '../../../database/prisma.service';
+import { AuthApplicationAccessService } from './auth-application-access.service';
 import { PasswordHasherService } from './password-hasher.service';
 
 @Injectable()
@@ -12,6 +13,7 @@ export class AuthAdminBootstrapService implements OnApplicationBootstrap {
     private readonly configService: ConfigService,
     private readonly prisma: PrismaService,
     private readonly passwordHasher: PasswordHasherService,
+    private readonly applicationAccess: AuthApplicationAccessService,
   ) {}
 
   async onApplicationBootstrap() {
@@ -44,15 +46,21 @@ export class AuthAdminBootstrapService implements OnApplicationBootstrap {
     if (!existingUser) {
       const passwordHash = await this.passwordHasher.hash(password);
 
-      await this.prisma.user.create({
+      const createdUser = await this.prisma.user.create({
         data: {
           email: normalizedEmail,
-          fullName,
+          person: {
+            create: {
+              fullName,
+            },
+          },
           passwordHash,
           roles: [Role.ADMIN],
           emailVerifiedAt: new Date(),
         },
       });
+
+      await this.applicationAccess.grantAdminDefaultApps(createdUser.id);
 
       this.logger.log(`Conta admin bootstrap criada para ${normalizedEmail}.`);
       return;
@@ -68,11 +76,15 @@ export class AuthAdminBootstrapService implements OnApplicationBootstrap {
         },
       });
 
+      await this.applicationAccess.grantAdminDefaultApps(existingUser.id);
+
       this.logger.log(
         `Role ADMIN adicionada ao usuario bootstrap ${normalizedEmail}.`,
       );
       return;
     }
+
+    await this.applicationAccess.grantAdminDefaultApps(existingUser.id);
 
     this.logger.log(`Bootstrap admin ja atendido para ${normalizedEmail}.`);
   }

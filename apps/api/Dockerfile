@@ -23,5 +23,4 @@ RUN mkdir -p /app/data/webhooks
 
 EXPOSE 3004
 
-CMD ["node", "dist/main"]
-
+CMD ["node", "dist/src/main.js"]

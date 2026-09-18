@@ -1,12 +1,36 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { raw } from 'express';
 import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
+import { RedisIoAdapter } from './common/realtime/redis-io.adapter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  app.enableCors({
+    origin: true,
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+    allowedHeaders: '*',
+  });
+  app.use(
+    '/api/integrations/sispat/employees-csv',
+    raw({
+      type: (request) => {
+        const contentTypeHeader = request.headers['content-type'];
+        const contentType = Array.isArray(contentTypeHeader)
+          ? contentTypeHeader[0] ?? ''
+          : contentTypeHeader ?? '';
+
+        return !contentType.toLowerCase().startsWith('multipart/form-data');
+      },
+      limit: '15mb',
+    }),
+  );
   app.useLogger(app.get(Logger));
+  const redisIoAdapter = new RedisIoAdapter(app);
+  await redisIoAdapter.connectToRedis();
+  app.useWebSocketAdapter(redisIoAdapter);
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

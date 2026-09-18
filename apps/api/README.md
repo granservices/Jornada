@@ -18,6 +18,7 @@ Backend `NestJS` do `Jornada`, com webhook intake, bootstrap tecnico e inicio do
 - `POST /api/integrations/drake/employees`
 - `POST /api/integrations/drake/expiring-requirements`
 - `POST /api/integrations/drake/boarding-schedule`
+- `POST /api/integrations/sispat/employees-csv`
 - `POST /api/auth/register`
 - `POST /api/auth/login`
 - `POST /api/auth/refresh`
@@ -32,6 +33,19 @@ Authorization: Bearer <DRAKE_WEBHOOK_BEARER_TOKEN>
 Content-Type: application/json
 ```
 
+O intake do SISPAT aceita:
+
+- `multipart/form-data` com arquivo `csv`, `xlsx` ou `xls` no campo `file`
+- corpo bruto com o conteudo do arquivo (`text/csv`, `application/csv`, `text/plain`, `application/octet-stream` e equivalentes para Excel)
+
+Ao receber uma planilha Excel, a API tenta usar a aba `Planilha1` primeiro. Se ela nao existir, usa a primeira aba encontrada.
+
+Para testes controlados, voce pode desabilitar a validacao do bearer token com:
+
+```env
+DRAKE_WEBHOOK_AUTH_DISABLED=true
+```
+
 ## Ambiente
 
 Use `.env` baseado em `.env.example`.
@@ -42,10 +56,12 @@ PORT=3004
 DATABASE_URL=postgresql://jornada:jornada@localhost:5434/jornada?schema=public
 REDIS_URL=redis://localhost:6379
 DRAKE_WEBHOOK_BEARER_TOKEN=replace-with-a-strong-random-token
+DRAKE_WEBHOOK_AUTH_DISABLED=false
 JWT_ACCESS_SECRET=replace-with-a-strong-random-token
 JWT_REFRESH_SECRET=replace-with-a-different-strong-random-token
 LOG_LEVEL=info
 WEBHOOK_STORAGE_DIR=./data/webhooks
+SISPAT_IMPORT_STORAGE_DIR=./data/sispat-imports
 DRAKE_WEBHOOK_QUEUE_ENABLED=true
 DRAKE_WEBHOOK_QUEUE_ATTEMPTS=5
 DRAKE_WEBHOOK_QUEUE_BACKOFF_MS=5000
@@ -72,6 +88,8 @@ docker compose up --build -d
 ## Persistencia inicial
 
 Cada webhook recebido e salvo em `data/webhooks`, para auditoria e validacao dos testes do Drake antes da camada completa de processamento.
+
+Os arquivos recebidos do SISPAT sao salvos em `data/sispat-imports`, preservando o formato original (`.csv` ou `.xlsx`) e gerando um `.json` de metadados com preview, colunas e hash.
 
 O Swagger local fica em `http://localhost:3004/api/docs`.
 

@@ -1,0 +1,1 @@
+ALTER TYPE "ChatMessageSenderType" ADD VALUE IF NOT EXISTS 'EXTERNAL';

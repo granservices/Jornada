@@ -1,7 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import type { Request, Response } from 'express';
 import { LoggerModule } from 'nestjs-pino';
 import { randomUUID } from 'node:crypto';
+
+type RequestWithId = Request & { id?: unknown };
 
 @Module({
   imports: [
@@ -21,7 +24,7 @@ import { randomUUID } from 'node:crypto';
                   },
                 }
               : undefined,
-          genReqId: (req, res) => {
+          genReqId: (req: RequestWithId, res: Response) => {
             const headerValue = req.headers['x-request-id'];
             const requestId =
               typeof headerValue === 'string' && headerValue.trim().length > 0
@@ -31,15 +34,15 @@ import { randomUUID } from 'node:crypto';
             res.setHeader('X-Request-Id', requestId);
             return requestId;
           },
-          customProps: (req) => ({
+          customProps: (req: RequestWithId) => ({
             requestId:
               typeof req.id === 'string' ? req.id : req.headers['x-request-id'],
           }),
-          customSuccessMessage: (req, res) =>
+          customSuccessMessage: (req: RequestWithId, res: Response) =>
             `${req.method} ${req.url} completed with ${res.statusCode}`,
-          customErrorMessage: (req, res) =>
+          customErrorMessage: (req: RequestWithId, res: Response) =>
             `${req.method} ${req.url} failed with ${res.statusCode}`,
-          customLogLevel: (_req, res, err) => {
+          customLogLevel: (_req: RequestWithId, res: Response, err?: Error) => {
             if (err || res.statusCode >= 500) {
               return 'error';
             }
