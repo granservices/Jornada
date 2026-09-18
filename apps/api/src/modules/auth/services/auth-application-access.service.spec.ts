@@ -100,6 +100,44 @@ describe('AuthApplicationAccessService', () => {
     });
   });
 
+  it('grants admin access to Jornada, Focall and QuickForms', async () => {
+    prisma.application.findMany.mockResolvedValue([
+      { id: 'app-jornada', code: 'JORNADA' },
+      { id: 'app-focall', code: 'HELP_HUB' },
+      { id: 'app-quick-forms', code: 'QUICK_FORMS' },
+    ]);
+
+    await service.grantAdminDefaultApps('admin-1');
+
+    expect(prisma.userApplicationAccess.upsert).toHaveBeenCalledTimes(3);
+    expect(prisma.userApplicationAccess.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          userId_applicationId: {
+            userId: 'admin-1',
+            applicationId: 'app-focall',
+          },
+        },
+        create: expect.objectContaining({
+          userId: 'admin-1',
+          applicationId: 'app-focall',
+          isDefault: false,
+        }),
+      }),
+    );
+    expect(prisma.userApplicationRole.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          userId_applicationId_roleCode: {
+            userId: 'admin-1',
+            applicationId: 'app-focall',
+            roleCode: 'MANAGER',
+          },
+        },
+      }),
+    );
+  });
+
   it('seeds Focall as a native module while preserving its stable application code', async () => {
     await service.ensureCatalogSeeded();
 

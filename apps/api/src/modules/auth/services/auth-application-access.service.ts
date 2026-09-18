@@ -103,6 +103,11 @@ export class AuthApplicationAccessService {
         roles: ['MANAGER'],
       },
       {
+        code: 'HELP_HUB',
+        isDefault: false,
+        roles: ['MANAGER'],
+      },
+      {
         code: 'QUICK_FORMS',
         isDefault: false,
         roles: ['MANAGER'],
