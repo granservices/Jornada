@@ -11,6 +11,9 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://jornada:jornada@localhost:55432/jornada?schema=public
+      REDIS_URL: redis://localhost:56379
 
     services:
       postgres:
