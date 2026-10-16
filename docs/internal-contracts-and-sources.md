@@ -37,12 +37,12 @@ Quando uma Fonte Externa virar `active`, ela deve alimentar o contrato interno c
 
 Implementacao inicial do harness:
 
-- tipos: `apps/jornada/src/features/contracts/internal-contracts.ts`
-- fixtures sanitizadas: `apps/jornada/src/features/contracts/internal-contract-fixtures.ts`
-- teste leve: `apps/jornada/src/features/contracts/internal-contract-fixtures.test.ts`
-- consumo inicial nas telas: `apps/jornada/src/views/dashboard-page.tsx`
-- tela dedicada de vencimentos do trabalhador: `apps/jornada/src/views/expirations-page.tsx`
-- regressao de tela: `apps/jornada/src/views/dashboard-page.test.tsx`
+- tipos: `apps/neo/src/features/contracts/internal-contracts.ts`
+- fixtures sanitizadas: `apps/neo/src/features/contracts/internal-contract-fixtures.ts`
+- teste leve: `apps/neo/src/features/contracts/internal-contract-fixtures.test.ts`
+- consumo inicial nas telas: `apps/neo/src/views/dashboard-page.tsx`
+- tela dedicada de vencimentos do trabalhador: `apps/neo/src/views/expirations-page.tsx`
+- regressao de tela: `apps/neo/src/views/dashboard-page.test.tsx`
 
 Essas fixtures sao a primeira base executavel dos contratos internos no frontend. Elas nao tornam nenhuma Fonte Externa ativa.
 
@@ -53,11 +53,11 @@ No MVP atual, `Inbox`, `Programacao`, `Vencimentos` e `Perfil` consomem essa fix
 O piloto de programacao usa o contrato interno `ScheduleItem`, sem promover o payload do Crew Rotation a contrato do Jornada.
 
 - `GET /api/boarding-schedule/me` resolve `User -> Person -> Employee` no backend e retorna somente a programacao da sessao autenticada.
-- o adapter encontra a unidade operacional do colaborador e consulta `CrewRotation/Periods`; esse `POST` e uma consulta parametrizada da fonte, encapsulada no backend.
+- o adapter encontra a unidade operacional do colaborador por matricula exata e consulta `CrewRotation/Periods`; esse `POST` e uma consulta parametrizada da fonte, encapsulada no backend.
 - a tela recebe apenas itens normalizados, intervalo consultado e metadados minimos da fonte. Token, tenant, identificador operacional, propriedades e payload cru nao atravessam a API do Jornada.
 - `GET /api/boarding-schedule/preview/*` existe somente para validacao por `ADMIN`, requer busca e selecao explicitas e grava auditoria de leitura. A busca devolve uma referencia opaca de cinco minutos, vinculada ao administrador; o `WorkerId` permanece no backend. Ele nao e o fluxo do colaborador.
 - o intervalo padrao e pequeno (30 dias anteriores e 180 posteriores) e a API rejeita janelas superiores a 366 dias. Nao ha sincronizacao em massa nem cache compartilhado de programacao pessoal neste piloto.
-- o vinculo definitivo depende de `Employee.employeeNumber` e/ou `Employee.externalEmployeeId` corresponderem ao registro do colaborador no Drake. O provisionamento deve validar esse vinculo antes de liberar a consulta `me`.
+- o vinculo definitivo depende de `Employee.employeeNumber` corresponder exatamente ao `workerRegistration`/`Registration` do colaborador no Drake. Como `CrewRotation/GetWorkers?textSearch=<matricula>` pode nao retornar todas as matriculas validas, o adapter usa `CrewRotation/FilterWorkers` com `filter=["workerRegistration","=",<matricula>]` e aceita somente matricula normalizada igual. Nome nunca deve ser fallback de vinculo, por risco de homonimos.
 
 ## Drake qualification needs pilot
 
@@ -232,7 +232,7 @@ Regras:
 Interface externa recomendada para o app:
 
 ```text
-apps/jornada -> API DTO do Jornada -> service de dominio -> repository/projection interna
+apps/neo -> API DTO do Jornada -> service de dominio -> repository/projection interna
 ```
 
 Interface para fonte externa ativa:

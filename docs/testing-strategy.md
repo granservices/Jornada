@@ -103,9 +103,9 @@ Manter fixtures para:
 
 Harness inicial implementado:
 
-- `apps/jornada/src/features/contracts/internal-contract-fixtures.test.ts` valida fixtures sanitizadas dos contratos internos no seam do frontend
-- `apps/jornada/src/views/dashboard-page.test.tsx` valida que `Inbox`, `Programacao` e `Perfil` consomem os contratos internos iniciais em vez de mocks soltos por tela
-- `apps/jornada/src/views/expirations-page.test.tsx` valida a tela dedicada de `Vencimentos` do trabalhador, incluindo consumo de `/expiring-requirements/me`, preview administrativo por referencia opaca e indicadores por icone
+- `apps/neo/src/features/contracts/internal-contract-fixtures.test.ts` valida fixtures sanitizadas dos contratos internos no seam do frontend
+- `apps/neo/src/views/dashboard-page.test.tsx` valida que `Inbox`, `Programacao` e `Perfil` consomem os contratos internos iniciais em vez de mocks soltos por tela
+- `apps/neo/src/views/expirations-page.test.tsx` valida a tela dedicada de `Vencimentos` do trabalhador, incluindo consumo de `/expiring-requirements/me`, preview administrativo por referencia opaca e indicadores por icone
 - o teste garante rotas internas do Jornada, documento mascarado e `IntegrationSyncRun` sem payload bruto
 - comando focado: `npm run test:jornada -- src/features/contracts/internal-contract-fixtures.test.ts`
 - comando focado de tela + contrato: `npm run test:jornada -- src/features/contracts/internal-contract-fixtures.test.ts src/views/dashboard-page.test.tsx src/views/expirations-page.test.tsx`
@@ -125,10 +125,11 @@ Ja validado na base atual:
 - `Vitest` configurado no app web com ambiente `jsdom`
 - `Testing Library` e `user-event` para interacoes reais de formulario
 - testes de regressao para cadastro administrativo de setores, assuntos, equipes, regras e formularios
-- testes de outbox transacional, relay, retry terminal e consumidor idempotente para a conclusao de QuickForms no HelpHub
+- testes de outbox transacional, relay, retry terminal e consumidor idempotente para a conclusao de QuickForms no Tickets
+- a suite Vitest do Neo roda em um fork unico no CI/local para evitar interferencia entre testes de UI que compartilham mocks de navegador e storage
 - testes de regressao para erro de carregamento, token invalido e empty state do catalogo administrativo de atendimento
 - guard automatizado contra uso inseguro de `event.currentTarget` dentro de updater funcional de estado
-- scripts raiz `npm run test:jornada`, `npm run test:help-hub` e `npm run test:jornada:guards`
+- scripts raiz `npm run test:jornada` e `npm run test:jornada:guards`
 
 ## Current baseline on August 20, 2026
 

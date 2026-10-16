@@ -5,6 +5,7 @@ import type { DomainEventOutboxService } from '../../../common/events/domain-eve
 import type { PrismaService } from '../../../database/prisma.service';
 import type { AuthTokenService } from './auth-token.service';
 import type { PasswordHasherService } from './password-hasher.service';
+import type { TransactionalEmailService } from './transactional-email.service';
 import { AuthUserProvisioningService } from './auth-user-provisioning.service';
 
 describe('AuthUserProvisioningService', () => {
@@ -27,6 +28,10 @@ describe('AuthUserProvisioningService', () => {
     domainEventOutbox: { upsert: jest.Mock };
     $transaction: jest.Mock;
   };
+  let transactionalEmail: {
+    assertCanDeliverInvitations: jest.Mock;
+    sendAdministrativeInvitation: jest.Mock;
+  };
   let service: AuthUserProvisioningService;
 
   beforeEach(() => {
@@ -46,14 +51,18 @@ describe('AuthUserProvisioningService', () => {
 
     prisma.application.findMany.mockResolvedValue([
       { id: 'app-jornada', code: 'JORNADA' },
-      { id: 'app-focall', code: 'HELP_HUB' },
+      { id: 'app-Tickets', code: 'TICKETS' },
     ]);
     prisma.user.findFirst.mockResolvedValue(null);
     prisma.user.create.mockResolvedValue({ id: 'user-1' });
     prisma.administrativeInvitation.create.mockResolvedValue({
       id: 'invite-1',
-      expiresAt: new Date('2026-09-30T10:00:00.000Z'),
+      expiresAt: new Date('2026-10-30T10:00:00.000Z'),
     });
+    transactionalEmail = {
+      assertCanDeliverInvitations: jest.fn(),
+      sendAdministrativeInvitation: jest.fn().mockResolvedValue({ status: 'PREVIEW' }),
+    };
 
     service = new AuthUserProvisioningService(
       prisma as unknown as PrismaService,
@@ -70,6 +79,7 @@ describe('AuthUserProvisioningService', () => {
       {
         hash: jest.fn().mockResolvedValue('new-password-hash'),
       } as unknown as PasswordHasherService,
+      transactionalEmail as unknown as TransactionalEmailService,
     );
   });
 
@@ -81,7 +91,7 @@ describe('AuthUserProvisioningService', () => {
       reason: 'ONBOARDING',
       applications: [
         { code: 'JORNADA', roles: ['MEMBER'], isDefault: true },
-        { code: 'HELP_HUB', roles: ['REQUESTER'], isDefault: false },
+        { code: 'TICKETS', roles: ['REQUESTER'], isDefault: false },
       ],
     });
 
@@ -112,9 +122,39 @@ describe('AuthUserProvisioningService', () => {
         userId: 'user-1',
         email: 'pessoa@example.com',
         status: 'PENDING',
-        deliveryStatus: 'QUEUED',
-        expiresAt: '2026-09-30T10:00:00.000Z',
+        deliveryStatus: 'PREVIEW',
+        expiresAt: '2026-10-30T10:00:00.000Z',
+        previewToken: 'raw-invite-secret',
       },
+    });
+    expect(transactionalEmail.assertCanDeliverInvitations).toHaveBeenCalled();
+    expect(transactionalEmail.sendAdministrativeInvitation).toHaveBeenCalledWith({
+      to: 'pessoa@example.com',
+      fullName: 'Pessoa Convidada',
+      token: 'raw-invite-secret',
+      expiresAt: new Date('2026-10-30T10:00:00.000Z'),
+    });
+  });
+
+  it('creates an invitation for a catalog application that uses default contextual roles', async () => {
+    prisma.application.findMany.mockResolvedValue([
+      { id: 'app-crew', code: 'CREW_OPS' },
+    ]);
+
+    await service.invite(admin, {
+      email: 'crew@example.com',
+      fullName: 'Pessoa Crew',
+      reason: 'ONBOARDING',
+      applications: [
+        { code: 'CREW_OPS', roles: ['MEMBER'], isDefault: true },
+      ],
+    });
+
+    expect(prisma.userApplicationRole.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        applicationId: 'app-crew',
+        roleCode: 'MEMBER',
+      }),
     });
   });
 
@@ -122,7 +162,7 @@ describe('AuthUserProvisioningService', () => {
     prisma.administrativeInvitation.findUnique.mockResolvedValue({
       id: 'invite-1',
       userId: 'user-1',
-      expiresAt: new Date('2026-09-30T10:00:00.000Z'),
+      expiresAt: new Date('2026-10-30T10:00:00.000Z'),
       consumedAt: null,
       invalidatedAt: null,
       user: { id: 'user-1', status: 'PENDING', email: 'pessoa@example.com' },
@@ -214,6 +254,7 @@ describe('AuthUserProvisioningService', () => {
       email: 'pessoa@example.com',
       status: 'PENDING',
       roles: [],
+      person: { fullName: 'Pessoa Convidada' },
     });
     prisma.administrativeInvitation.create.mockResolvedValue({
       id: 'invite-2',
@@ -233,5 +274,11 @@ describe('AuthUserProvisioningService', () => {
     expect(response.item).toEqual(
       expect.objectContaining({ invitationId: 'invite-2', userId: 'user-1', status: 'PENDING' }),
     );
+    expect(transactionalEmail.sendAdministrativeInvitation).toHaveBeenCalledWith({
+      to: 'pessoa@example.com',
+      fullName: 'Pessoa Convidada',
+      token: 'raw-invite-secret',
+      expiresAt: new Date('2026-09-10T10:00:00.000Z'),
+    });
   });
 });

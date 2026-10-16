@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { AuditAction, Role } from '@prisma/client';
 import type { AuthenticatedUser } from '../../../common/auth/authenticated-user';
 import { AuditService } from '../../../common/audit/audit.service';
@@ -21,7 +21,23 @@ export class EmployeeScheduleService {
 
   async listMySchedule(user: AuthenticatedUser, range: EmployeeScheduleRange) {
     const employee = await this.findEmployee(user.id);
+    if (!employee) {
+      return this.emptySchedule(range);
+    }
+
     const worker = await this.resolveWorker(employee.externalEmployeeId, employee.employeeNumber);
+    if (!worker) {
+      await this.audit.record({
+        actorUserId: user.id,
+        action: AuditAction.READ,
+        entityType: 'EmployeeSchedule',
+        entityId: employee.id,
+        metadata: { source: 'DRAKE', scope: 'self', itemCount: 0, from: range.from.toISOString(), to: range.to.toISOString(), missingWorkerLink: true },
+      });
+
+      return this.emptySchedule(range);
+    }
+
     const result = await this.listWorkerSchedule(worker, range);
 
     await this.audit.record({
@@ -96,11 +112,11 @@ export class EmployeeScheduleService {
     const employee = user?.person.employee;
 
     if (!employee) {
-      throw new NotFoundException('Sua conta ainda nao esta vinculada a um colaborador.');
+      return null;
     }
 
     if (!employee.externalEmployeeId && !employee.employeeNumber) {
-      throw new NotFoundException('Sua matricula ainda nao esta vinculada a programacao externa.');
+      return null;
     }
 
     return employee;
@@ -108,11 +124,7 @@ export class EmployeeScheduleService {
 
   private async resolveWorker(externalEmployeeId: string | null, employeeNumber: string | null) {
     const worker = await this.drake.findWorker(externalEmployeeId ?? employeeNumber ?? '', employeeNumber);
-    if (!worker) {
-      throw new NotFoundException('Nao foi localizado vinculo de programacao para este colaborador.');
-    }
-
-    return worker;
+    return worker ?? null;
   }
 
   private async listWorkerSchedule(
@@ -133,6 +145,14 @@ export class EmployeeScheduleService {
           return item ? [item] : [];
         })
         .sort((left, right) => left.startsAt.localeCompare(right.startsAt)),
+      range: { from: range.from.toISOString(), to: range.to.toISOString() },
+      source: { label: 'Drake', updatedAt: new Date().toISOString() },
+    };
+  }
+
+  private emptySchedule(range: EmployeeScheduleRange) {
+    return {
+      items: [],
       range: { from: range.from.toISOString(), to: range.to.toISOString() },
       source: { label: 'Drake', updatedAt: new Date().toISOString() },
     };

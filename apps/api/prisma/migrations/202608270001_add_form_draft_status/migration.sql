@@ -1,1 +1,0 @@
-ALTER TYPE "SupportCatalogStatus" ADD VALUE IF NOT EXISTS 'DRAFT';

@@ -32,8 +32,8 @@ const APPLICATION_CATALOG = [
     sortOrder: 10,
   },
   {
-    code: 'HELP_HUB',
-    name: 'Focall',
+    code: 'TICKETS',
+    name: 'Tickets',
     description: 'Atendimentos e suporte ao colaborador.',
     entryKind: ApplicationEntryKind.NATIVE,
     entryPath: '/atendimentos',
@@ -103,7 +103,7 @@ export class AuthApplicationAccessService {
         roles: ['MANAGER'],
       },
       {
-        code: 'HELP_HUB',
+        code: 'TICKETS',
         isDefault: false,
         roles: ['MANAGER'],
       },
@@ -282,7 +282,7 @@ export class AuthApplicationAccessService {
           roles: ['MEMBER'],
         },
         {
-          code: 'HELP_HUB',
+          code: 'TICKETS',
           isDefault: false,
           roles: ['AGENT'],
         },

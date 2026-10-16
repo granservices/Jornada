@@ -58,8 +58,6 @@ Status em 9 de setembro de 2026:
 - Drake foi retomado somente como piloto controlado de leitura de programacao por colaborador.
 - `BoardingScheduleModule` ganhou controller autenticado, servico de dominio e adapter `DrakeCrewRotationClient`; a tela continua dependente de `ScheduleItem`, nunca do DTO externo.
 - o caminho normal e `GET /api/boarding-schedule/me`; a pre-visualizacao administrativa e auditada e nao substitui vinculo de identidade.
-- falta aplicar a migration `202609090001_add_audit_read_action` no banco do ambiente antes de disponibilizar a leitura real.
-- validacao local posterior: migration aplicada e piloto autenticado retornou itens normalizados do Crew Rotation por referencia administrativa opaca.
 
 ## Phase 1.5 - Platform hardening
 
@@ -94,14 +92,14 @@ Entregas:
 Status em 20 de agosto de 2026:
 
 - backend de `auth` ja estabelecido
-- shell visual de login, cadastro, recuperacao e redefinicao iniciado em `apps/jornada`
+- shell visual de login, cadastro, recuperacao e redefinicao iniciado em `apps/neo`
 - proximo passo natural e conectar os fluxos visuais ao backend real
 
 Status em 21 de agosto de 2026:
 
 - `auth` passou a usar separacao entre `Person`, `Employee` e `User`
 - `admin bootstrap` segue suportado por email e senha, sem exigir matricula
-- login do `apps/jornada` conectado ao backend real com persistencia local da sessao
+- login do `apps/neo` conectado ao backend real com persistencia local da sessao
 
 Status em 29 de agosto de 2026:
 
@@ -110,7 +108,7 @@ Status em 29 de agosto de 2026:
 - fundacao de papel contextual por app iniciada com `UserApplicationRole`
 - login e refresh passam a poder retornar as aplicacoes acessiveis do usuario
 - `GET /auth/applications` entra como contrato inicial para a futura tela de escolha de aplicacao
-- separacao recomendada formalizada: `apps/jornada` para colaborador, `apps/help-hub` para atendimento, `apps/api` ainda compartilhado por bounded context
+- separacao recomendada formalizada inicialmente e depois supersedida pelo frontend Neo unico; `apps/api` segue compartilhado por bounded context
 - regra operacional reforcada: backlog compartilhado apenas enquanto o atendimento estiver sem responsavel; apos atribuicao, acesso comum passa a ser do responsavel atual
 - gestao administrativa central iniciada no backend para grants e papeis por aplicacao
 - catalogo central de aplicativos evoluido com tipo de entrada, imagem opcional, ordenacao, ativacao, CRUD auditado e rota administrativa `/administracao/aplicativos`
@@ -126,8 +124,8 @@ Status em 3 de setembro de 2026:
 
 - o cadastro publico passou a ser desabilitado por padrao; convite administrativo cria conta `PENDING`, acesso explicito por modulo e token de sete dias armazenado apenas como hash; reenvio invalida o convite pendente anterior
 - o aceite ativa a conta de forma atomica, define a senha e invalida sessoes anteriores; bloqueio, desativacao e revogacao avulsa de sessoes possuem motivo estruturado, auditoria e evento transacional
-- o catalogo de papeis novos agora e contextual por modulo: Jornada, Focall e QuickForms validam combinacoes distintas na API administrativa e no Neo
-- ADR `0010-jornada-communication-to-focall-handoff.md` inicia a tela Jornada de comunicados e o handoff contextual ao Focall, ainda sem criar atendimento automaticamente
+- o catalogo de papeis novos agora e contextual por modulo: Jornada, Tickets e QuickForms validam combinacoes distintas na API administrativa e no Neo
+- ADR `0010-jornada-communication-to-Tickets-handoff.md` inicia a tela Jornada de comunicados e o handoff contextual ao Tickets, ainda sem criar atendimento automaticamente
 
 ## Phase 3 - Processing core
 
@@ -251,9 +249,9 @@ Status em 31 de agosto de 2026:
 - modelo operacional de atendimento refinado: setor obrigatorio, assunto opcional, formulario principal antes da conversa e continuidade do mesmo caso em transferencias
 - vocabulário de dominio fechado para atendimento: `SupportDepartment` como setor visivel, `SupportTeam` como fila/equipe interna e ownership separado de acesso ao app
 - workspace do atendente consolidado conceitualmente com prioridade em backlog da equipe, depois detalhe e por fim contexto secundario recolhivel
-- separacao fisica inicial de frontend entregue em `apps/help-hub`
-- `apps/jornada` fica como experiencia do colaborador e encaminha rotas operacionais antigas para o HelpHub
-- `apps/help-hub` concentra o atendimento e sua configuracao operacional enquanto o QuickForms ganha frontend proprio
+- separacao fisica inicial de frontend foi entregue e depois consolidada no Neo unificado
+- `apps/neo` concentra experiencia do colaborador, Tickets e QuickForms como modulos internos
+- Tickets concentra atendimento e configuracao operacional enquanto QuickForms mantem biblioteca, fontes e builder
 - `apps/api` e PostgreSQL continuam compartilhados como monolito modular por contexto
 - decisao registrada em `docs/adr/0004-separate-atendimento-frontend-first.md`
 
@@ -274,7 +272,7 @@ Entregas:
 
 Status em 20 de agosto de 2026:
 
-- `apps/jornada` iniciado com `Vite`, `React`, `React Aria Components`, `Tailwind CSS` e `vite-plugin-pwa`
+- `apps/neo` iniciado com `Vite`, `React`, `React Aria Components`, `Tailwind CSS` e `vite-plugin-pwa`
 - shell mobile-first ja definido com navegacao inferior no celular e sidebar no desktop
 - tema base claro ja definido, com neutros frios e vermelho reservado para acento e estados criticos
 
@@ -312,7 +310,7 @@ Entregas:
 - papeis contextuais por aplicacao
 - gestao administrativa central de grants e papeis por aplicacao
 - tela de escolha de aplicativo apos login
-- separacao do frontend operacional em `apps/help-hub`
+- separacao operacional materializada como modulo Tickets no frontend Neo
 - contratos de permissao por contexto
 - criterios claros para futura extracao de backend e banco
 
@@ -322,12 +320,12 @@ Status em 29 de agosto de 2026:
 - login e redirects passam a respeitar `applications[]` retornadas pela sessao
 - usuario com um unico app entra direto no `entryPath`; usuario com mais de um acesso escolhe o contexto antes de navegar
 - menu do shell passou a respeitar acesso contextual por aplicacao, reduzindo mistura visual entre colaborador e operacao
-- rotas de `atendimentos` ganharam guarda de frontend por app; formularios seguem em extracao gradual para `apps/quick-forms`
+- rotas de `atendimentos` e `formularios` ganharam guarda por app e resolucao local no Neo
 
 Status em 31 de agosto de 2026:
 
-- `apps/help-hub` criado como frontend operacional inicial
-- `apps/jornada` removeu carregamento direto das telas operacionais e manteve apenas redirecionamento para o HelpHub
+- Tickets criado como experiencia operacional inicial
+- `apps/neo` removeu carregamento direto das telas operacionais e manteve apenas redirecionamento para o Tickets
 - `apps/api` continua compartilhado; extracao de backend/banco fica dependente de sinais operacionais reais
 
 ## Phase 8.5 - Modular platform hardening
@@ -336,11 +334,11 @@ Objetivo: transformar os limites do ecossistema em codigo testavel antes de ampl
 
 Entregas:
 
-- nomenclatura de produto `Jornada`, `HelpHub` e `QuickForms`; o Hub e o portal `/aplicativos` dentro do Jornada, sem marca propria
+- nomenclatura de produto `Jornada`, `Tickets` e `QuickForms`; o Hub e o portal `/aplicativos` dentro do Jornada, sem marca propria
 - eventos de dominio persistidos em outbox transacional
 - relay com fila, retries, idempotencia e reprocessamento antes da primeira integracao assincrona entre dominios
 - requests/respostas independentes para QuickForms
-- politica de SLA e calendario operacional no HelpHub
+- politica de SLA e calendario operacional no Tickets
 
 Status em 1 de setembro de 2026:
 
@@ -350,23 +348,23 @@ Status em 1 de setembro de 2026:
 - `forms.request.created` passou a ser persistido no outbox na mesma transacao da solicitacao
 - `FormResponse` passou a registrar uma unica conclusao pelo destinatario e a publicar `forms.request.completed` no outbox
 - relay BullMQ adicionado com varredura de pendencias, recuperacao de processamento preso, retry exponencial e estado terminal reprocessavel
-- `ProcessedDomainEvent` garante que o consumidor do HelpHub registre uma unica projeção operacional para `forms.request.completed`
+- `ProcessedDomainEvent` garante que o consumidor do Tickets registre uma unica projeção operacional para `forms.request.completed`
 - API autenticada do QuickForms adicionada para criar solicitacoes e receber respostas sem acesso direto a tabelas de outro dominio
-- politica de SLA e calendario operacional do HelpHub permanecem como proxima entrega de dominio
+- politica de SLA e calendario operacional do Tickets permanecem como proxima entrega de dominio
 - primeira politica de SLA implementada: alvo configuravel por prioridade, calculo 24x7 isolado e `dueAt` persistido na abertura do atendimento
-- catalogo central agora usa `JORNADA`, `HELP_HUB` e `QUICK_FORMS`; a migracao preserva grants do codigo legado
-- `apps/quick-forms` possui PWA e rotas autenticadas reais para biblioteca, fontes e builder
-- existem tres apps de negocio: Jornada, HelpHub e QuickForms; o portal de modulos permanece em `/aplicativos` no Jornada e nao usa nome ou login proprio
-- qualquer acesso direto ao HelpHub ou QuickForms sem sessao abre o login central do Jornada e, depois, retorna por ticket SSO opaco ao app solicitado
-- mudanca de app usa ticket SSO opaco, hasheado no banco, de uso unico e curta duracao; emissao e consumo sao auditados
-- `packages/frontend-core` passou a ser o dono da infraestrutura compartilhada de frontend; HelpHub e QuickForms usam o pacote para auth/SSO/tema/estilos e shell comum
-- telas e clientes de HelpHub e QuickForms foram movidos para seus respectivos `apps`; o shell foi extraido para o core com porta injetavel para a dock de suporte, sem acoplar QuickForms ao dominio de atendimento
-- o frame visual do shell foi consolidado no frontend core para eliminar divergencia de header, sidebar e fundo entre HelpHub, QuickForms e Jornada
-- ADR `0006-unify-frontend-as-modules.md` define a proxima simplificacao: um frontend Neo publicado, com Jornada, Focall e QuickForms como modulos internos lazy; `HELP_HUB` permanece codigo tecnico durante a migracao
+- catalogo central agora usa `JORNADA`, `TICKETS` e `QUICK_FORMS`; o schema local foi consolidado em uma migration inicial unica
+- QuickForms possui rotas autenticadas reais para biblioteca, fontes e builder
+- existem tres modulos de negocio nativos: Jornada, Tickets e QuickForms; o portal de modulos permanece em `/aplicativos` e nao usa nome ou login proprio
+- acesso direto a Tickets ou QuickForms sem sessao abre o login central do Neo e retorna para a rota nativa solicitada
+- mudanca entre modulos nativos usa a mesma sessao, sem ticket SSO interno
+- a infraestrutura compartilhada de frontend foi consolidada no shell de `apps/neo`
+- telas e clientes de Tickets e QuickForms foram movidos para seus respectivos `apps`; o shell foi extraido para o core com porta injetavel para a dock de suporte, sem acoplar QuickForms ao dominio de atendimento
+- o frame visual do shell foi consolidado no frontend core para eliminar divergencia de header, sidebar e fundo entre Tickets, QuickForms e Jornada
+- ADR `0006-unify-frontend-as-modules.md` registra o frontend Neo publicado, com Jornada, Tickets e QuickForms como modulos internos lazy
 
 Status em 2 de setembro de 2026:
 
-- o frontend Neo foi consolidado em `apps/jornada`, com uma sessao, um shell e um PWA.
-- Focall e QuickForms foram movidos para `apps/jornada/src/modules` e preservam respectivamente `/atendimentos` e `/formularios`.
-- catalogo nativo atualizado para `Focall`, `HELP_HUB` e `QUICK_FORMS` como `NATIVE`; destinos externos continuam como `REDIRECT`.
-- a proxima etapa e smoke manual e retirada controlada dos frontends de referencia, sem mudar backend, banco ou contratos de dominio.
+- o frontend Neo foi consolidado em `apps/neo`, com uma sessao, um shell e um PWA.
+- Tickets e QuickForms foram movidos para `apps/neo/src/modules` e preservam respectivamente `/atendimentos` e `/formularios`.
+- catalogo nativo atualizado para `Tickets`, `TICKETS` e `QUICK_FORMS` como `NATIVE`; destinos externos continuam como `REDIRECT`.
+- frontends de referencia foram removidos sem mudar backend, banco ou contratos de dominio.

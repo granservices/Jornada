@@ -1,4 +1,4 @@
-import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import { ForbiddenException } from '@nestjs/common';
 import { AuditAction, Role, UserStatus } from '@prisma/client';
 import type { AuthenticatedUser } from '../../../common/auth/authenticated-user';
 import type { AuditService } from '../../../common/audit/audit.service';
@@ -93,12 +93,38 @@ describe('EmployeeScheduleService', () => {
     }));
   });
 
-  it('does not query Drake when the signed-in user has no employee relationship', async () => {
+  it('returns an empty schedule when the signed-in user has no employee relationship', async () => {
     prisma.user.findUnique.mockResolvedValue({ person: { employee: null } });
 
     await expect(service.listMySchedule(employee, service.resolveRange('2026-09-01', '2026-10-01')))
-      .rejects.toBeInstanceOf(NotFoundException);
+      .resolves.toEqual({
+        items: [],
+        range: {
+          from: '2026-09-01T00:00:00.000Z',
+          to: '2026-10-01T00:00:00.000Z',
+        },
+        source: expect.objectContaining({ label: 'Drake' }),
+      });
     expect(drake.findWorker).not.toHaveBeenCalled();
+    expect(drake.listPeriods).not.toHaveBeenCalled();
+  });
+
+  it('returns an empty schedule when Drake has no worker match for the signed-in employee', async () => {
+    prisma.user.findUnique.mockResolvedValue({
+      person: { employee: { id: 'employee-1', employeeNumber: 'FRI-01-10014', externalEmployeeId: null } },
+    });
+    drake.findWorker.mockResolvedValue(null);
+
+    await expect(service.listMySchedule(employee, service.resolveRange('2026-09-01', '2026-10-01')))
+      .resolves.toEqual({
+        items: [],
+        range: {
+          from: '2026-09-01T00:00:00.000Z',
+          to: '2026-10-01T00:00:00.000Z',
+        },
+        source: expect.objectContaining({ label: 'Drake' }),
+      });
+    expect(drake.listPeriods).not.toHaveBeenCalled();
   });
 
   it('keeps administrative preview restricted to administrators', async () => {

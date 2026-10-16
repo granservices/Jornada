@@ -10,15 +10,19 @@
 - [x] Definir LGPD como requisito obrigatorio de arquitetura e produto
 - [x] Definir backend separado do futuro frontend/PWA
 - [x] Definir direcao de ecossistema com apps separados para colaborador e operacao
-- [x] Criar `apps/help-hub` como frontend operacional inicial
+- [x] Criar e depois consolidar o frontend operacional no Neo unificado
 - [x] Criar documentacao inicial de roadmap, skill e checklist
-- [x] Criar documentacao de arquitetura, modulos e testes
+- [x] Criar documentacao essencial de arquitetura, contratos, produto e testes
+- [x] Remover documentos e scripts legados/sobrepostos da base principal
 - [x] Definir `docs/agents-and-skills.md` como fonte operacional obrigatoria leve para mudancas materiais
 - [x] Definir agentes como responsabilidades arquiteturais/lentes de revisao, nao servicos obrigatorios
 - [x] Escolher base de UI com `React Aria Components` + `Tailwind CSS`
 - [x] Limpar a base antiga em Next.js local
 - [x] Mover a API definitiva para a estrutura final do monorepo
-- [x] Definir nomes finais de `apps/api` e `apps/jornada`
+- [x] Definir nomes finais de `apps/api` e `apps/neo`
+- [x] Renomear o frontend publicado para `apps/neo` e manter aliases de comandos legados
+- [x] Identificar Neo como plataforma e Jornada, Tickets e QuickForms como aplicativos no portal
+- [x] Adicionar gate de vulnerabilidades criticas no CI e registrar riscos altos conhecidos
 
 ## Platform baseline
 
@@ -48,6 +52,8 @@
 - [x] Preparar migracoes
 - [x] Incluir Redis desde o inicio para filas, Socket.IO, cache e estados efemeros
 - [x] Criar `AuditLog` para rastrear acoes de negocio/configuracao com payload sanitizado
+- [x] Fixar portas locais da infra de desenvolvimento (`55432` para PostgreSQL e `56379` para Redis), recriando apenas containers Jornada e bloqueando conflitos externos
+- [x] Criar `npm run dev:doctor` para diagnosticar Docker, containers, portas, `.env` e health check local antes de investigar a UI
 
 ## External integrations
 
@@ -73,9 +79,16 @@
 - [x] Implementar fixtures sanitizadas dos contratos internos iniciais no frontend
 - [x] Validar o frontend contra contratos internos, nao contra payload externo
 - [x] Conectar Inbox, Programacao, Vencimentos e Perfil ao seam inicial de contratos internos
+- [x] Refinar shell mobile para manter identidade do usuario no topo e mover Perfil para o menu Mais
+- [x] Neutralizar o canvas do Neo Jornada e reservar vermelho vinho para acoes, marca e selecao
+- [x] Corrigir filtros da Inbox para `Acao`, `Atualizacoes`, `Mensagens` e `Tudo`, com `Acao` exibindo apenas itens acionaveis
+- [x] Reduzir repeticoes no detalhe da Inbox e manter a acao primaria somente no painel de leitura
+- [x] Aproximar tipografia, vinho, dourado, tabs, busca e controles da Inbox da referencia visual aprovada
+- [x] Remover titulo e texto introdutorio da Inbox para abrir direto nos controles funcionais
 - [ ] Consolidar fixture sanitizada/replay do Crew Rotation apos primeira resposta validada no ambiente local
 - [x] Vincular testes de contrato ao harness de regressao da fonte Drake ativa
 - [x] Validar ponta a ponta o piloto de programacao pelo endpoint autenticado, referencia administrativa opaca e normalizacao para `ScheduleItem`
+- [x] Resolver trabalhador Drake por matricula exata via `CrewRotation/FilterWorkers` quando `GetWorkers` nao encontra a matricula via `textSearch`, sem usar nome como fallback por risco de homonimos
 
 ## Domain modeling
 
@@ -112,7 +125,11 @@
 - [x] Substituir cadastro publico em producao por convite administrativo com aceite e expiracao segura
 - [x] Limitar convite a sete dias, uso unico e hash persistido
 - [x] Implementar reenvio que invalida o convite anterior ainda ativo
-- [ ] Enviar convite para email corporativo ou pessoal por canal transacional, com adaptador e outbox; nunca expor o segredo fora de ambiente de desenvolvimento
+- [x] Retornar token de preview de convite apenas fora de producao para permitir aceite em desenvolvimento e testes sem expor segredo em producao
+- [x] Exibir na tela administrativa o link de convite de desenvolvimento quando a API retornar `previewToken`, com acao de copiar ou abrir
+- [x] Expor reenvio de acesso para contas pendentes na tela administrativa, regenerando email/link de aceite
+- [x] Padronizar `/convite` com a pagina atual de login, sem depender do layout antigo de autenticacao
+- [x] Enviar convite para email corporativo ou pessoal por canal transacional usando SMTP compativel com CrewControl; nunca expor o segredo fora de ambiente de desenvolvimento
 - [ ] Restringir alteracao de email a TI, com justificativa, auditoria e invalidacao de convite pendente
 - [ ] Enviar notificacao de seguranca por email para mudancas administrativas sensiveis
 - [x] Criar ciclo de vida administrativo da conta: pendente, ativa, bloqueada e desativada, com revogacao de sessoes
@@ -131,6 +148,7 @@
 - [ ] Definir retencao, desativacao e eventual anonimizacao de contas com historico
 - [ ] Migrar policies de modulo de roles globais legadas para papeis contextuais, preservando `ADMIN` apenas para administracao transversal
 - [x] Evoluir catalogo generico de papeis por aplicacao para papeis declarados e validados pelo modulo
+- [x] Permitir que aplicacoes do catalogo sem papeis proprios usem papeis contextuais padrao `MEMBER` e `MANAGER`
 - [ ] Migrar roles globais legadas por modulo com revisao de acesso efetivo antes de remover cada fallback
 - [ ] Planejar e implementar MFA obrigatorio para `ADMIN` antes de ampliar a administracao para uso operacional
 - [x] Definir bootstrap seguro de admin
@@ -141,18 +159,19 @@
 - [x] Expor gestao inicial de usuarios e concessao/revogacao de acesso por aplicacao
 - [x] Expor edicao explicita de papeis contextuais por aplicacao para usuarios administrados
 - [x] Criar tela de portal de apps apos login
-- [x] Criar `apps/help-hub` como frontend operacional separado do colaborador
+- [x] Criar Tickets como experiencia operacional separada por modulo
 - [x] Manter `apps/api` e banco compartilhados nesta etapa da separacao
 - [x] Registrar ADR da separacao frontend-first entre colaborador e operacao
-- [x] Separar chunks de runtime do `apps/help-hub` para manter o entrypoint operacional leve
+- [x] Separar rotas/modulos lazy para manter o entrypoint operacional leve
 - [x] Evoluir primeira camada de autorizacao contextual por aplicacao no frontend
-- [ ] Migrar policies de dominio do Focall e QuickForms para consultar papeis contextuais no backend, removendo o fallback legado
+- [ ] Migrar policies de dominio do Tickets e QuickForms para consultar papeis contextuais no backend, removendo o fallback legado
 - [x] Definir UX mobile-first
 - [x] Definir breakpoints criticos do produto
 - [ ] Validar ausencia de quebra visual em `360px`, `390px-430px`, `768px` e `1280px`
 - [x] Definir padrao de adaptacao entre navegacao mobile e desktop
 - [x] Refazer shell admin com linguagem visual dark-first mais premium
 - [x] Implementar modos claro e escuro no shell administrativo com tokens compartilhados
+- [x] Transformar o modo escuro em tema graphite real, mantendo o claro branco gelo e contraste legivel em botoes, textos e status
 - [x] Fixar fundo do shell administrativo e alinhar a linguagem espacial com o login
 - [x] Adicionar profundidade espacial com distribuicao de planetas, satelites e parallax sutil
 - [x] Adicionar flutuacao ambiente leve nos elementos do fundo sem pesar a interface
@@ -166,6 +185,14 @@
 - [x] Alinhar altura desktop do conteudo com a sidebar e concentrar rolagem no corpo principal
 - [x] Implementar sidebar desktop recolhivel com hover, motion e trava persistida
 - [x] Transformar header da area logada em faixa compacta de orientacao com nome da pagina
+- [x] Remover funil contextual do header da area logada e manter o shell focado em navegacao funcional
+- [x] Registrar TasteSkill como referencia de qualidade de frontend, sem substituir o design system do Neo
+- [x] Migrar a area logada do Neo Jornada para base clara/editorial do design system proposto, reduzindo aparencia gerada por IA
+- [x] Reestruturar `/inbox` com titulo editorial, abas, busca, lista acionavel e painel de leitura lateral no desktop
+- [x] Restaurar `/aplicativos` como portal visual offshore escuro, com hero de plataforma, busca, filtros por categoria e cards claros acionaveis
+- [x] Ajustar `/aplicativos` para listar os 4 apps atuais: Jornada, Tickets, QuickForms e Neo
+- [x] Refinar `/aplicativos` para densidade de 100% de zoom, cards sobrepostos na divisa do hero, tipografia e cores alinhadas ao `/inbox`
+- [x] Compactar densidade visual da area logada para funcionar bem em 100% de zoom do navegador
 - [x] Manter card compacto de ferramentas no Inbox sem texto explicativo
 - [x] Remover nome/descricao das secoes de ferramentas e distribuir filtros sem scroll horizontal desnecessario
 - [x] Padronizar tamanho, fonte e largura dos botoes de filtro e acoes compactas
@@ -187,6 +214,7 @@
 - [x] Ocultar Chat do menu principal e redirecionar `/chat` para `/atendimento`
 - [x] Separar contato do colaborador em `/atendimento` da mesa operacional `/atendimentos`
 - [x] Fazer `/atendimento` respeitar a selecao administrativa temporaria de colaborador durante validacao por `ADMIN`, sem exigir relogin em outra conta
+- [x] Tratar usuario recem-criado sem vinculo externo de programacao/qualificacoes como estado vazio em `/inbox`, `/programacao` e `/vencimentos`, evitando 404 ao trocar de pagina
 - [x] Trocar abas por query string por rotas reais na area logada
 - [x] Iniciar tela detalhada da programacao do funcionario
 - [x] Ajustar Programacao para abrir em timeline unica no MVP
@@ -282,6 +310,9 @@
 - [x] Implementar primeira tela web de Atendimentos para abrir demanda, acompanhar lista, comentar e avaliar atendimento resolvido
 - [x] Separar Atendimentos em visualizacoes de lista, criacao e detalhe para reduzir confusao no fluxo do funcionario
 - [x] Transformar detalhe de Atendimento em conversa de helpdesk com bolhas, eventos discretos e composer no rodape
+- [x] Remover eventos tecnicos de mensagem registrada da conversa e exibir recibo visual apenas para mensagens enviadas ja persistidas
+- [x] Refinar tela de Atendimentos do Tickets com lista tabular, cabecalho operacional, conversa com avatares e layout mobile corrigido
+- [x] Separar responsabilidades da mesa operacional do Tickets com filas `Para assumir`, `Meus atendimentos`, `Da equipe`, `SLA critico` e `Todos`, usando `/inbox` como referencia visual atual
 - [x] Permitir abertura por setor geral quando ainda nao houver assunto ativo no catalogo
 - [x] Adicionar fallback de catalogo administrativo para suporte/admin quando o catalogo publico estiver vazio
 - [x] Implementar encerramento e transferencia inicial pela tela de atendente
@@ -334,32 +365,32 @@
 - [x] Definir `Jornada` e `Atendimento` como apps distintos no ecossistema
 - [x] Documentar `auth` como portal de acesso ao ecossistema, sem tomar posse das regras dos apps
 - [x] Reduzir dependencias cruzadas entre `worker`, `support` e `forms` para preparar extracao futura
-- [x] Definir primeira projection/evento interno para conclusao de formulario no HelpHub
+- [x] Definir primeira projection/evento interno para conclusao de formulario no Tickets
 - [x] Registrar ADR de monolito modular, apps separados no codigo e extracao por sinais objetivos
-- [x] Criar `DomainEventOutbox` para persistir eventos de dominio na mesma transacao do HelpHub
+- [x] Criar `DomainEventOutbox` para persistir eventos de dominio na mesma transacao do Tickets
 - [x] Criar `FormRequest` independente com formulario publicado, prazo e contexto de origem
 - [x] Criar relay do outbox, consumidor idempotente e fila de falhas para o primeiro evento entre dominios
 - [x] Expor contratos HTTP autenticados para solicitar e responder QuickForms
-- [x] Persistir politica inicial de SLA por prioridade e calcular prazo do HelpHub na abertura do atendimento
-- [x] Renomear `apps/web` para `apps/jornada` e `apps/atendimento` para `apps/help-hub`
-- [x] Renomear o codigo de catalogo `ATENDIMENTO` para `HELP_HUB`, preservando grants existentes por migracao
-- [x] Criar `apps/quick-forms` com PWA, SSO e rotas reais de biblioteca, fontes e builder
+- [x] Persistir politica inicial de SLA por prioridade e calcular prazo do Tickets na abertura do atendimento
+- [x] Renomear `apps/web` para `apps/neo` e consolidar Tickets como modulo interno
+- [x] Renomear o codigo de catalogo `ATENDIMENTO` para `TICKETS` e migrar grants existentes
+- [x] Criar QuickForms com rotas reais de biblioteca, fontes e builder
 - [x] Consolidar o Hub como portal `/aplicativos` dentro do Jornada, sem quarto app, marca ou formulario de login
 - [x] Permitir que `ADMIN` mantenha o catalogo do Hub com nome, descricao, imagem, ordem, ativacao e destino nativo ou externo
 - [x] Registrar mudancas do catalogo em auditoria e manter o codigo do aplicativo imutavel para preservar grants e SSO
 - [x] Adicionar busca por nome e descricao e badge de tipo na pagina `/aplicativos`
-- [x] Redirecionar o acesso anonimo direto ao HelpHub e QuickForms para o login central do Jornada
-- [x] Emitir e consumir ticket SSO de uso unico, com hash, expiracao curta e auditoria sem token/URL
-- [x] Extrair `packages/frontend-core` para sessao, SSO, login, catalogo, tema, estilos e setup de teste compartilhados
-- [x] Consolidar o frame visual compartilhado do shell em `packages/frontend-core` para Jornada, HelpHub e QuickForms
-- [x] Consolidar Jornada, Focall e QuickForms em um unico frontend Neo por modulos lazy
+- [x] Redirecionar o acesso anonimo direto ao Tickets e QuickForms para o login central do Jornada
+- [x] Remover SSO interno entre modulos nativos apos consolidar o frontend unico
+- [x] Consolidar sessao, login, catalogo, tema, estilos e setup de teste em `apps/neo`
+- [x] Consolidar o frame visual compartilhado no shell do Neo
+- [x] Consolidar Jornada, Tickets e QuickForms em um unico frontend Neo por modulos lazy
 - [x] Criar registry de modulos nativos e remover SSO entre rotas internas
-- [x] Migrar o codigo mantido de Focall e QuickForms para `apps/jornada/src/modules`
+- [x] Migrar o codigo mantido de Tickets e QuickForms para `apps/neo/src/modules`
 - [x] Validar rotas diretas, Hub, grants e um unico PWA antes de remover apps legados
-- [ ] Remover `apps/help-hub` e `apps/quick-forms` apos a validacao da migracao
-- [x] Mover telas, clientes, componentes e testes de atendimento para `apps/help-hub`
-- [x] Mover telas, clientes, componentes e testes de formularios para `apps/quick-forms`
-- [x] Extrair `AppShellLayout` para o core com porta opcional de workspace de suporte
+- [x] Remover os workspaces e o pacote de frontend separados apos a consolidacao
+- [x] Mover telas, clientes, componentes e testes de atendimento para `apps/neo/src/modules/tickets`
+- [x] Mover telas, clientes, componentes e testes de formularios para `apps/neo/src/modules/quick-forms`
+- [x] Consolidar `AppShellLayout` no app Neo com suporte a experiencias por modulo
 - [ ] Definir criterio objetivo de extracao de `support` para servico proprio
 
 ## Operations
@@ -369,7 +400,3 @@
 - [x] Definir retries e dead-letter
 - [ ] Definir processo de deploy
 - [ ] Definir homologacao e producao
-- [x] Criar mini app `apps/intake-api` para intake operacional segregado com Docker Compose, endpoint unico e SQLite analitico
-- [x] Publicar `apps/intake-api` em producao com token proprio, volume persistente e borda SSL em `https://jornada.granhub.com.br/api/intake`
-- [x] Habilitar modo diagnostico temporario do intake com CORS aberto, token opcional e captura de rotas Drake legadas
-- [ ] Apontar a origem para `POST /api/intake/events` apos validacao do health e do token

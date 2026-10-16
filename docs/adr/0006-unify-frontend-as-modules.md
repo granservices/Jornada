@@ -6,17 +6,17 @@ Accepted on 2026-09-02.
 
 ## Context
 
-The first frontend split created `apps/jornada`, `apps/help-hub` and
-`apps/quick-forms`. It preserved product boundaries, but introduced three
+The first frontend split created separate Jornada, Tickets and QuickForms
+workspaces. It preserved product boundaries, but introduced three
 runtime shells, PWA manifests, local servers and an internal SSO transition.
 The shared visual shell then diverged in practice, increasing maintenance cost
 without a proven need for independent frontend deployment.
 
 ## Decision
 
-Neo will publish one frontend: `apps/jornada`.
+Neo will publish one frontend: `apps/neo`.
 
-- `Jornada`, `Focall` and `QuickForms` are independent internal modules of the
+- `Jornada`, `Tickets` and `QuickForms` are independent internal modules of the
   same frontend, loaded by route.
 - Existing direct routes remain stable: `/inbox`, `/atendimentos` and
   `/formularios`.
@@ -28,14 +28,14 @@ Neo will publish one frontend: `apps/jornada`.
   internal modules. Internal module navigation never issues an SSO ticket.
 - Native module routes and icons are a versioned registry in code. The auth
   catalog controls access, visible metadata, ordering and activation.
-- The product name changes from `HelpHub` to `Focall`. `HELP_HUB` remains the
-  immutable technical code until a separate, deliberate identifier migration is
-  justified.
+- The product and application identifier are `Tickets` and `TICKETS`.
+  Existing grants are migrated to the new identifier before the old catalog
+  code is removed from active runtime paths.
 - Catalog entries with `REDIRECT` remain external applications. They may be
   managed by an administrator, but do not become internal modules.
-- `apps/help-hub` and `apps/quick-forms` remain migration references only until
-  their module tests and unified-app smoke tests pass. They are then removed
-  from the workspace, scripts and deployment surface.
+- The old `apps/tickets` and `apps/quick-forms` workspaces were removed after
+  module migration into the unified frontend. They are no longer part of the
+  workspace, scripts or deployment surface.
 
 The backend remains a modular monolith. This decision changes frontend
 publication only; it does not relax data ownership, contracts, outbox,

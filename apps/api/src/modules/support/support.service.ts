@@ -261,7 +261,7 @@ export class SupportService {
     const requesterUser = validationRequester ?? user;
     const limit = query.limit ?? 20;
     const supportUser = !validationRequester && this.isSupportUser(user);
-    const effectiveQueue = supportUser ? (query.queue ?? 'nao-atribuidos') : undefined;
+    const effectiveQueue = supportUser ? this.normalizeSupportQueue(query.queue) : undefined;
     const allowedTeamCodes = this.allowedTeamCodes(user);
     const team = query.teamCode
       ? await this.findActiveTeamOrThrow(query.teamCode)
@@ -3096,9 +3096,13 @@ export class SupportService {
 
   private whereForQueueView(
     queue:
+      | 'para-assumir'
+      | 'meus-atendimentos'
+      | 'da-equipe'
+      | 'sla-critico'
+      | 'todos'
       | 'novos-e-meus'
       | 'nao-atribuidos'
-      | 'meus-atendimentos'
       | 'aguardando'
       | 'alta-prioridade'
       | 'resolvidos'
@@ -3112,14 +3116,7 @@ export class SupportService {
     const resolvedStatuses = [SupportCaseStatus.RESOLVED, SupportCaseStatus.CLOSED];
     const unresolvedStatusFilter = { notIn: resolvedStatuses };
 
-    if (queue === 'novos-e-meus') {
-      return {
-        status: unresolvedStatusFilter,
-        OR: [{ assignedUserId: currentUserId }, { assignedUserId: null }],
-      };
-    }
-
-    if (queue === 'nao-atribuidos') {
+    if (queue === 'para-assumir' || queue === 'nao-atribuidos') {
       return {
         status: unresolvedStatusFilter,
         assignedUserId: null,
@@ -3130,6 +3127,12 @@ export class SupportService {
       return {
         status: unresolvedStatusFilter,
         assignedUserId: currentUserId,
+      };
+    }
+
+    if (queue === 'da-equipe' || queue === 'novos-e-meus') {
+      return {
+        status: unresolvedStatusFilter,
       };
     }
 
@@ -3145,16 +3148,47 @@ export class SupportService {
       };
     }
 
-    if (queue === 'alta-prioridade') {
+    if (queue === 'sla-critico' || queue === 'alta-prioridade') {
       return {
         status: unresolvedStatusFilter,
-        priority: { in: [SupportCasePriority.HIGH, SupportCasePriority.URGENT] },
+        OR: [
+          { priority: { in: [SupportCasePriority.HIGH, SupportCasePriority.URGENT] } },
+          { dueAt: { lte: new Date() } },
+        ],
       };
     }
 
-    return {
-      status: { in: resolvedStatuses },
-    };
+    if (queue === 'resolvidos') {
+      return {
+        status: { in: resolvedStatuses },
+      };
+    }
+
+    return undefined;
+  }
+
+  private normalizeSupportQueue(queue: ListSupportCasesDto['queue']) {
+    if (!queue) {
+      return 'para-assumir' as const;
+    }
+
+    if (queue === 'nao-atribuidos') {
+      return 'para-assumir' as const;
+    }
+
+    if (queue === 'novos-e-meus') {
+      return 'da-equipe' as const;
+    }
+
+    if (queue === 'alta-prioridade') {
+      return 'sla-critico' as const;
+    }
+
+    if (queue === 'aguardando' || queue === 'resolvidos') {
+      return 'todos' as const;
+    }
+
+    return queue;
   }
 
   private whereForRestrictedSupportVisibility(user: AuthenticatedUser) {

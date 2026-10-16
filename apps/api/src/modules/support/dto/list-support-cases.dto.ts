@@ -14,17 +14,25 @@ import {
 export class ListSupportCasesDto {
   @IsOptional()
   @IsIn([
+    'para-assumir',
+    'meus-atendimentos',
+    'da-equipe',
+    'sla-critico',
+    'todos',
     'novos-e-meus',
     'nao-atribuidos',
-    'meus-atendimentos',
     'aguardando',
     'alta-prioridade',
     'resolvidos',
   ])
   queue?:
+    | 'para-assumir'
+    | 'meus-atendimentos'
+    | 'da-equipe'
+    | 'sla-critico'
+    | 'todos'
     | 'novos-e-meus'
     | 'nao-atribuidos'
-    | 'meus-atendimentos'
     | 'aguardando'
     | 'alta-prioridade'
     | 'resolvidos';

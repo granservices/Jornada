@@ -21,6 +21,7 @@ import { areValidApplicationRoles } from '../application-role-catalog';
 import { CreateAdministrativeInvitationDto } from '../dto/create-administrative-invitation.dto';
 import { AuthTokenService } from './auth-token.service';
 import { PasswordHasherService } from './password-hasher.service';
+import { TransactionalEmailService } from './transactional-email.service';
 
 const INVITATION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -32,10 +33,12 @@ export class AuthUserProvisioningService {
     private readonly eventOutbox: DomainEventOutboxService,
     private readonly authToken: AuthTokenService,
     private readonly passwordHasher: PasswordHasherService,
+    private readonly transactionalEmail: TransactionalEmailService,
   ) {}
 
   async invite(actor: AuthenticatedUser, dto: CreateAdministrativeInvitationDto) {
     this.assertAdmin(actor);
+    this.transactionalEmail.assertCanDeliverInvitations();
 
     const email = dto.email.trim().toLowerCase();
     const fullName = dto.fullName.trim();
@@ -131,6 +134,12 @@ export class AuthUserProvisioningService {
 
       return { id: createdInvitation.id, userId: user.id, expiresAt: createdInvitation.expiresAt };
     });
+    const delivery = await this.transactionalEmail.sendAdministrativeInvitation({
+      to: email,
+      fullName,
+      token: rawToken,
+      expiresAt: invitation.expiresAt,
+    });
 
     return {
       item: {
@@ -138,8 +147,10 @@ export class AuthUserProvisioningService {
         userId: invitation.userId,
         email,
         status: UserStatus.PENDING,
-        deliveryStatus: 'QUEUED',
+        deliveryStatus: delivery.status,
         expiresAt: invitation.expiresAt.toISOString(),
+        previewToken:
+          process.env.NODE_ENV === 'production' ? undefined : rawToken,
       },
     };
   }
@@ -341,9 +352,19 @@ export class AuthUserProvisioningService {
     input: { reason: AccessChangeReason; reasonComment?: string },
   ) {
     this.assertAdmin(actor);
+    this.transactionalEmail.assertCanDeliverInvitations();
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, email: true, status: true },
+      select: {
+        id: true,
+        email: true,
+        status: true,
+        person: {
+          select: {
+            fullName: true,
+          },
+        },
+      },
     });
 
     if (!user || user.status !== UserStatus.PENDING) {
@@ -352,7 +373,8 @@ export class AuthUserProvisioningService {
 
     const now = new Date();
     const expiresAt = new Date(now.getTime() + INVITATION_TTL_MS);
-    const tokenHash = this.authToken.hashOpaqueToken(this.authToken.generateOpaqueToken());
+    const rawToken = this.authToken.generateOpaqueToken();
+    const tokenHash = this.authToken.hashOpaqueToken(rawToken);
     const invitation = await this.prisma.$transaction(async (tx) => {
       await tx.administrativeInvitation.updateMany({
         where: {
@@ -390,6 +412,12 @@ export class AuthUserProvisioningService {
       });
       return created;
     });
+    const delivery = await this.transactionalEmail.sendAdministrativeInvitation({
+      to: user.email,
+      fullName: user.person.fullName,
+      token: rawToken,
+      expiresAt: invitation.expiresAt,
+    });
 
     return {
       item: {
@@ -397,8 +425,10 @@ export class AuthUserProvisioningService {
         userId: user.id,
         email: user.email,
         status: UserStatus.PENDING,
-        deliveryStatus: 'QUEUED',
+        deliveryStatus: delivery.status,
         expiresAt: invitation.expiresAt.toISOString(),
+        previewToken:
+          process.env.NODE_ENV === 'production' ? undefined : rawToken,
       },
     };
   }

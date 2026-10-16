@@ -28,11 +28,11 @@ Catalogo inicial recomendado:
 | Modulo | Papeis |
 | --- | --- |
 | Jornada | `MEMBER`, `MANAGER` |
-| Focall | `REQUESTER`, `AGENT`, `MANAGER` |
+| Tickets | `REQUESTER`, `AGENT`, `MANAGER` |
 | QuickForms | `VIEWER`, `AUTHOR`, `PUBLISHER`, `MANAGER` |
 
 `ADMIN` global pode acessar a administracao transversal, mas nao substitui
-automaticamente as policies de ownership do Focall. A elevacao administrativa
+automaticamente as policies de ownership do Tickets. A elevacao administrativa
 em um modulo deve ser explicita e auditada quando for necessaria.
 
 ## Migration

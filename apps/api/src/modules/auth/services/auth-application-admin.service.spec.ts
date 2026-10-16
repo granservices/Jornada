@@ -223,6 +223,39 @@ describe('AuthApplicationAdminService', () => {
     expect(prisma.application.create).not.toHaveBeenCalled();
   });
 
+  it('creates the native Neo application when its registered entry path is used', async () => {
+    prisma.application.create.mockResolvedValue({
+      id: 'app-neo',
+      code: 'NEO',
+      name: 'Neo',
+      description: 'Portal central',
+      entryKind: 'NATIVE',
+      entryPath: '/aplicativos',
+      imageUrl: null,
+      sortOrder: 0,
+      status: 'ACTIVE',
+      createdAt: new Date('2026-09-02T10:00:00.000Z'),
+      updatedAt: new Date('2026-09-02T10:00:00.000Z'),
+    });
+
+    await service.createApplication(admin, {
+      code: 'NEO',
+      name: 'Neo',
+      description: 'Portal central',
+      entryKind: ApplicationEntryKind.NATIVE,
+      entryPath: '/aplicativos',
+      sortOrder: 0,
+    });
+
+    expect(prisma.application.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        code: 'NEO',
+        entryKind: 'NATIVE',
+        entryPath: '/aplicativos',
+      }),
+    });
+  });
+
   it('updates application details without changing its immutable code', async () => {
     const existing = {
       id: 'app-jornada',
@@ -263,9 +296,9 @@ describe('AuthApplicationAdminService', () => {
 
   it('updates application access, switches default app and audits the action', async () => {
     prisma.application.findUnique.mockResolvedValue({
-      id: 'app-focall',
-      code: 'HELP_HUB',
-      name: 'Focall',
+      id: 'app-Tickets',
+      code: 'TICKETS',
+      name: 'Tickets',
       status: 'ACTIVE',
     });
     prisma.user.findUnique
@@ -309,18 +342,18 @@ describe('AuthApplicationAdminService', () => {
         },
         applicationAccesses: [
           {
-            applicationId: 'app-focall',
+            applicationId: 'app-Tickets',
             isDefault: true,
             application: {
-              id: 'app-focall',
-              code: 'HELP_HUB',
-              name: 'Focall',
+              id: 'app-Tickets',
+              code: 'TICKETS',
+              name: 'Tickets',
             },
           },
         ],
         applicationRoles: [
           {
-            applicationId: 'app-focall',
+            applicationId: 'app-Tickets',
             roleCode: 'AGENT',
           },
         ],
@@ -329,7 +362,7 @@ describe('AuthApplicationAdminService', () => {
     const response = await service.setUserApplicationAccess(
       admin,
       'user-1',
-      'HELP_HUB',
+      'TICKETS',
       {
         enabled: true,
         isDefault: true,
@@ -340,7 +373,7 @@ describe('AuthApplicationAdminService', () => {
     expect(prisma.userApplicationAccess.updateMany).toHaveBeenCalledWith({
       where: {
         userId: 'user-1',
-        applicationId: { not: 'app-focall' },
+        applicationId: { not: 'app-Tickets' },
         status: UserApplicationAccessStatus.ACTIVE,
       },
       data: {
@@ -351,7 +384,7 @@ describe('AuthApplicationAdminService', () => {
       where: {
         userId_applicationId: {
           userId: 'user-1',
-          applicationId: 'app-focall',
+          applicationId: 'app-Tickets',
         },
       },
       update: {
@@ -360,7 +393,7 @@ describe('AuthApplicationAdminService', () => {
       },
       create: {
         userId: 'user-1',
-        applicationId: 'app-focall',
+        applicationId: 'app-Tickets',
         status: UserApplicationAccessStatus.ACTIVE,
         isDefault: true,
       },
@@ -369,7 +402,7 @@ describe('AuthApplicationAdminService', () => {
       where: {
         userId_applicationId_roleCode: {
           userId: 'user-1',
-          applicationId: 'app-focall',
+          applicationId: 'app-Tickets',
           roleCode: 'AGENT',
         },
       },
@@ -378,7 +411,7 @@ describe('AuthApplicationAdminService', () => {
       },
       create: {
         userId: 'user-1',
-        applicationId: 'app-focall',
+        applicationId: 'app-Tickets',
         roleCode: 'AGENT',
         status: UserApplicationRoleStatus.ACTIVE,
       },
@@ -394,7 +427,7 @@ describe('AuthApplicationAdminService', () => {
       expect.objectContaining({
         applications: [
           expect.objectContaining({
-            code: 'HELP_HUB',
+            code: 'TICKETS',
             isDefault: true,
             roles: ['AGENT'],
           }),
@@ -403,11 +436,86 @@ describe('AuthApplicationAdminService', () => {
     );
   });
 
+  it('grants a catalog application with default contextual roles when it has no custom role catalog', async () => {
+    prisma.application.findUnique.mockResolvedValue({
+      id: 'app-crew',
+      code: 'CREW_OPS',
+      name: 'CrewOps',
+      status: 'ACTIVE',
+    });
+    prisma.user.findUnique
+      .mockResolvedValueOnce({
+        id: 'user-1',
+        email: 'colaborador@granservices.com.br',
+        status: UserStatus.ACTIVE,
+        roles: [Role.EMPLOYEE],
+        person: {
+          fullName: 'Colaborador Gran',
+          employee: { employeeNumber: 'GRN-001' },
+        },
+        applicationAccesses: [],
+        applicationRoles: [],
+      })
+      .mockResolvedValueOnce({
+        id: 'user-1',
+        email: 'colaborador@granservices.com.br',
+        status: UserStatus.ACTIVE,
+        roles: [Role.EMPLOYEE],
+        person: {
+          fullName: 'Colaborador Gran',
+          employee: { employeeNumber: 'GRN-001' },
+        },
+        applicationAccesses: [
+          {
+            applicationId: 'app-crew',
+            isDefault: false,
+            application: {
+              id: 'app-crew',
+              code: 'CREW_OPS',
+              name: 'CrewOps',
+            },
+          },
+        ],
+        applicationRoles: [
+          {
+            applicationId: 'app-crew',
+            roleCode: 'MEMBER',
+          },
+        ],
+      });
+
+    const response = await service.setUserApplicationAccess(
+      admin,
+      'user-1',
+      'CREW_OPS',
+      {
+        enabled: true,
+        isDefault: false,
+        roles: ['MEMBER'],
+      },
+    );
+
+    expect(prisma.userApplicationRole.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        create: expect.objectContaining({
+          applicationId: 'app-crew',
+          roleCode: 'MEMBER',
+        }),
+      }),
+    );
+    expect(response.item.applications).toEqual([
+      expect.objectContaining({
+        code: 'CREW_OPS',
+        roles: ['MEMBER'],
+      }),
+    ]);
+  });
+
   it('revokes application access and all application roles together', async () => {
     prisma.application.findUnique.mockResolvedValue({
-      id: 'app-focall',
-      code: 'HELP_HUB',
-      name: 'Focall',
+      id: 'app-Tickets',
+      code: 'TICKETS',
+      name: 'Tickets',
       status: 'ACTIVE',
     });
     prisma.user.findUnique
@@ -422,19 +530,19 @@ describe('AuthApplicationAdminService', () => {
         },
         applicationAccesses: [
           {
-            applicationId: 'app-focall',
+            applicationId: 'app-Tickets',
             status: UserApplicationAccessStatus.ACTIVE,
             isDefault: false,
             application: {
-              id: 'app-focall',
-              code: 'HELP_HUB',
-              name: 'Focall',
+              id: 'app-Tickets',
+              code: 'TICKETS',
+              name: 'Tickets',
             },
           },
         ],
         applicationRoles: [
           {
-            applicationId: 'app-focall',
+            applicationId: 'app-Tickets',
             roleCode: 'AGENT',
             status: UserApplicationRoleStatus.ACTIVE,
           },
@@ -453,7 +561,7 @@ describe('AuthApplicationAdminService', () => {
         applicationRoles: [],
       });
 
-    await service.setUserApplicationAccess(admin, 'user-1', 'HELP_HUB', {
+    await service.setUserApplicationAccess(admin, 'user-1', 'TICKETS', {
       enabled: false,
       roles: [],
     });
@@ -461,7 +569,7 @@ describe('AuthApplicationAdminService', () => {
     expect(prisma.userApplicationAccess.updateMany).toHaveBeenCalledWith({
       where: {
         userId: 'user-1',
-        applicationId: 'app-focall',
+        applicationId: 'app-Tickets',
       },
       data: {
         status: UserApplicationAccessStatus.REVOKED,
@@ -471,7 +579,7 @@ describe('AuthApplicationAdminService', () => {
     expect(prisma.userApplicationRole.updateMany).toHaveBeenCalledWith({
       where: {
         userId: 'user-1',
-        applicationId: 'app-focall',
+        applicationId: 'app-Tickets',
       },
       data: {
         status: UserApplicationRoleStatus.REVOKED,

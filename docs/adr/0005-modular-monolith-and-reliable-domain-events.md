@@ -10,7 +10,7 @@ events remain accepted.
 
 Jornada will remain a modular monolith while product boundaries mature.
 
-- `Jornada`, `HelpHub`, `QuickForms`, and `Hub` are separate frontend applications in the same repository.
+- `Jornada`, `Tickets`, `QuickForms`, and `Hub` are separate frontend applications in the same repository.
 - `apps/api` remains the initial deployment unit, organized by feature/domain modules.
 - A module owns its rules, tables, migrations, DTOs, events, tests, and technical contracts.
 - A module may expose only explicit contracts from its `contracts/` directory. It must not access another module's persistence directly.

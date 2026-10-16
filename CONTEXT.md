@@ -64,32 +64,19 @@ Comunicado operacional direcionado ao colaborador ou a um publico autorizado.
 
 _Avoid_: notificacao tecnica, mensagem de chat, log operacional.
 
-### Communication To Focall Handoff
+### Communication To Tickets Handoff
 
-Navegacao contextual de um `Communication` do Jornada para o Focall, sem
+Navegacao contextual de um `Communication` do Jornada para o Tickets, sem
 leitura ou escrita direta entre tabelas dos modulos.
 
 O contexto minimo inclui identificador do comunicado, modulo de origem e rota
-permitida. A criacao futura de atendimento sera comando idempotente do Focall.
+permitida. A criacao futura de atendimento sera comando idempotente do Tickets.
 
 ### IntegrationSyncRun
 
 Registro de execucao de uma importacao, webhook ou sincronizacao de Fonte Externa.
 
 _Avoid_: log bruto, payload externo salvo como trilha oficial.
-
-### IntakeEvent
-
-Evento externo recebido pelo mini app de intake operacional para analise antes
-de qualquer reaproveitamento pelo Jornada.
-
-Regras:
-
-- representa o recebimento bruto indexado, nao o dado operacional confiavel
-- pode ser classificado como pendencia de qualificacao, programacao logistica
-  ou desconhecido
-- preserva raw payload para auditoria e usa indice analitico para consulta
-- nao substitui `ScheduleItem`, `RequirementExpiration` ou `InboxItem`
 
 _Avoid_: tratar como cadastro de colaborador, contrato interno do Jornada ou
 mensagem enviada de fato ao colaborador.
@@ -107,12 +94,57 @@ Experiencia funcional interna do Neo, publicada dentro do mesmo frontend e prote
 Exemplos atuais:
 
 - Jornada
-- Focall
+- Tickets
 - QuickForms
 
 Um modulo possui rota, navegacao, permissoes, telas, testes e regras de dominio proprias, mas nao exige frontend, sessao ou PWA separados.
 
 _Avoid_: chamar todo modulo interno de aplicacao quando a conversa for de produto ou UX.
+
+### Atendimento
+
+Unidade de trabalho do Tickets para registrar, acompanhar e resolver uma solicitacao.
+
+Um atendimento pode ter conversa, campos de formulario, responsavel, equipe,
+SLA, eventos de auditoria e avaliacao, mas a tela principal deve tratar o
+atendimento como o objeto central. A conversa e parte do atendimento, nao o
+dominio inteiro.
+
+_Avoid_: chamado como apenas chat, ticket como termo principal na interface,
+demanda generica sem responsavel operacional.
+
+### Para Assumir
+
+Fila de atendimentos ativos da equipe que ainda nao possuem atendente
+responsavel.
+
+_Avoid_: backlog da equipe, sem responsavel como nome principal da fila.
+
+### Meus Atendimentos
+
+Fila de atendimentos ativos atribuidos ao usuario operacional atual.
+
+_Avoid_: comigo, minha fila.
+
+### Da Equipe
+
+Visao dos atendimentos ativos acessiveis pela equipe do usuario operacional,
+incluindo atendimentos atribuidos a colegas.
+
+_Avoid_: todos como fluxo principal de trabalho.
+
+### SLA Critico
+
+Fila operacional de atendimentos ativos com prioridade alta/urgente ou prazo
+vencido.
+
+_Avoid_: alta prioridade quando o criterio tambem inclui prazo.
+
+### Todos
+
+Visao de consulta ampla dos atendimentos acessiveis ao usuario operacional.
+
+_Avoid_: usar Todos como entrada principal de trabalho diario.
 
 ### External Application
 
@@ -204,9 +236,9 @@ seu estado de acesso.
 Usado em incidente, perda de dispositivo ou mudanca de funcao; exige motivo,
 auditoria e aviso de seguranca.
 
-### Focall
+### Tickets
 
-Nome de produto do modulo operacional de atendimento antes denominado HelpHub.
+Nome de produto do modulo operacional de atendimento antes denominado Tickets.
 
 Responsabilidades:
 
@@ -214,7 +246,7 @@ Responsabilidades:
 - configuracao de setores, assuntos, equipes e roteamento
 - workspace de atendimento e auditoria operacional
 
-_Avoid_: tratar Focall como dono de formularios ou como simples pagina de chat.
+_Avoid_: tratar Tickets como dono de formularios ou como simples pagina de chat.
 
 ### SupportDepartment
 
@@ -299,8 +331,8 @@ Fila compartilhada da equipe.
 Regras:
 
 - itens sem responsavel ficam no backlog da equipe autorizada
-- backlog e a visao operacional padrao do atendente
-- filtros principais do workspace: `Sem responsavel`, `Comigo`, `Aguardando`
+- a interface chama esse recorte de `Para Assumir`
+- a mesa operacional usa `Para Assumir`, `Meus Atendimentos`, `Da Equipe`, `SLA Critico` e `Todos`
 
 ### Ownership
 
@@ -464,8 +496,8 @@ Ordem de prioridade visual e operacional:
 
 Padrao inicial:
 
-- abrir por `Backlog da minha equipe`
-- manter filtros rapidos para `Sem responsavel`, `Comigo` e `Aguardando`
+- abrir por `Para Assumir`
+- manter filas rapidas para `Meus Atendimentos`, `Da Equipe`, `SLA Critico` e `Todos`
 - atendimento assumido continua visivel para a equipe, mas em estado proprio
 
 ### Transferencia

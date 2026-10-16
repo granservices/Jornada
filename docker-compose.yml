@@ -17,7 +17,7 @@ services:
     container_name: jornada-redis
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "${JORNADA_REDIS_PORT:-6379}:6379"
     volumes:
       - redis_data:/data
 

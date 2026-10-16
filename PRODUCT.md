@@ -8,7 +8,7 @@ web
 
 ## Users
 
-Colaboradores embarcados acessam a Jornada diretamente para consultar informacoes e resolver pendencias com pouco atrito, inclusive em conexoes instaveis. Equipes de atendimento e administradores usam o HelpHub e o QuickForms para operar filas, regras e formularios.
+Colaboradores embarcados acessam a Jornada diretamente para consultar informacoes e resolver pendencias com pouco atrito, inclusive em conexoes instaveis. Equipes de atendimento e administradores usam o Tickets e o QuickForms para operar filas, regras e formularios.
 
 ## Product Purpose
 
@@ -16,11 +16,11 @@ Neo e o acesso unificado aos aplicativos internos da GranServices. Uma mesma ide
 
 ## Positioning
 
-Os aplicativos permanecem dominios independentes, mas compartilham identidade, sessao e catalogo de acessos. Jornada, HelpHub e QuickForms se comunicam por contratos internos e nao por acesso direto a dados de outro dominio.
+Os aplicativos permanecem dominios independentes, mas compartilham identidade, sessao e catalogo de acessos. Jornada, Tickets e QuickForms se comunicam por contratos internos e nao por acesso direto a dados de outro dominio.
 
 ## Operating Context
 
-Jornada acompanha programacao, vencimentos, comunicacoes e demandas do colaborador. HelpHub trata solicitacoes por setor e fila. QuickForms cria e versiona formularios reutilizaveis por outros aplicativos.
+Jornada acompanha programacao, vencimentos, comunicacoes e demandas do colaborador. Tickets trata solicitacoes por setor e fila. QuickForms cria e versiona formularios reutilizaveis por outros aplicativos.
 
 ## Capabilities and Constraints
 
@@ -35,9 +35,9 @@ O nome provisório da plataforma e Neo. A linguagem deve ser empresarial, precis
 
 ## Evidence on Hand
 
-- Logo em `apps/jornada/public/crew-logo.png`.
-- Cenário visual Neo em `apps/jornada/public/neo-offshore-platform.png`.
-- Aplicativos atuais: Jornada, HelpHub e QuickForms.
+- Logo em `apps/neo/public/crew-logo.png`.
+- Cenário visual Neo em `apps/neo/public/neo-offshore-platform.png`.
+- Aplicativos atuais: Jornada, Tickets e QuickForms.
 
 ## Product Principles
 

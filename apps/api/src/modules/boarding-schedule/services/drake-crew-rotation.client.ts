@@ -72,14 +72,14 @@ export class DrakeCrewRotationClient {
     url.searchParams.set('limit', '20');
 
     const body = await this.request(url, { method: 'GET' });
-    const items = this.readArray(body, 'Items', 'items');
-    return items.flatMap((item) => this.toWorker(item));
+    return this.readArray(body, 'Items', 'items').flatMap((item) => this.toWorker(item));
   }
 
   async findWorker(workerId: string, employeeNumber: string | null) {
     const candidates = await this.findWorkers(employeeNumber ?? workerId);
     return candidates.find((candidate) => candidate.workerId === workerId)
       ?? candidates.find((candidate) => candidate.employeeNumber === employeeNumber)
+      ?? await this.findWorkerByExactRegistration(employeeNumber)
       ?? null;
   }
 
@@ -157,6 +157,35 @@ export class DrakeCrewRotationClient {
     return this.config.getOrThrow<string>('DRAKE_API_BASE_URL');
   }
 
+  private async findWorkerByExactRegistration(employeeNumber: string | null) {
+    const registration = this.normalizeRegistration(employeeNumber);
+    if (!registration) {
+      return null;
+    }
+
+    const now = new Date();
+    const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 3, 1));
+    const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 6, 1));
+    const url = new URL('/api/v2/CrewRotation/FilterWorkers', this.baseUrl());
+    url.searchParams.set('start', start.toISOString());
+    url.searchParams.set('end', end.toISOString());
+    url.searchParams.set('operationalUnitId', '');
+    url.searchParams.set('events', '');
+    url.searchParams.set('startEvent', start.toISOString());
+    url.searchParams.set('endEvent', end.toISOString());
+    url.searchParams.set('hideWorkersWithoutMovements', 'false');
+    url.searchParams.set('withNextEvents', 'false');
+    url.searchParams.set('options.skip', '0');
+    url.searchParams.set('options.take', '5');
+    url.searchParams.set('filter', JSON.stringify(['workerRegistration', '=', registration]));
+
+    const body = await this.request(url, { method: 'GET' });
+    const candidates = this.readArray(body, 'data', 'Data').flatMap((item) => this.toWorker(item));
+    return candidates.find(
+      (candidate) => this.normalizeRegistration(candidate.employeeNumber) === registration,
+    ) ?? null;
+  }
+
   private readArray(value: unknown, ...keys: string[]) {
     if (Array.isArray(value)) {
       return value;
@@ -228,5 +257,9 @@ export class DrakeCrewRotationClient {
 
   private readString(value: unknown) {
     return typeof value === 'string' && value.trim() ? value.trim() : null;
+  }
+
+  private normalizeRegistration(value: string | null) {
+    return value?.trim().toUpperCase() || null;
   }
 }

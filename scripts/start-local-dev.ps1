@@ -106,7 +106,7 @@ try {
 
   Write-Host 'API pronta em http://localhost:3004/api/health'
   Write-Host 'Neo disponivel em http://localhost:3006'
-  & npm.cmd run dev:jornada
+  & npm.cmd run dev:neo
 }
 finally {
   if (-not $apiStart.HasExited) {

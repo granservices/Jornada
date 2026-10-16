@@ -47,4 +47,31 @@ describe('DrakeCrewRotationClient', () => {
 
     await expect(client.findWorkers('Pessoa')).rejects.toBeInstanceOf(ServiceUnavailableException);
   });
+
+  it('resolves a worker by exact registration with FilterWorkers when text search does not find the registration', async () => {
+    const fetchMock = jest.spyOn(global, 'fetch')
+      .mockResolvedValueOnce(new Response(JSON.stringify({ items: [] }), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({
+        data: [
+          {
+            workerId: 'worker-1',
+            workerRegistration: 'REG-1',
+            workerName: 'Pessoa Certa',
+            operationalUnitId: 'unit-1',
+          },
+        ],
+      }), { status: 200 }));
+    const client = new DrakeCrewRotationClient(config as unknown as ConfigService);
+
+    await expect(client.findWorker('REG-1', 'REG-1')).resolves.toEqual(
+      expect.objectContaining({ workerId: 'worker-1', employeeNumber: 'REG-1' }),
+    );
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect((fetchMock.mock.calls[0]?.[0] as URL).searchParams.get('textSearch')).toBe('REG-1');
+    expect((fetchMock.mock.calls[1]?.[0] as URL).pathname).toBe('/api/v2/CrewRotation/FilterWorkers');
+    expect((fetchMock.mock.calls[1]?.[0] as URL).searchParams.get('filter')).toBe(
+      JSON.stringify(['workerRegistration', '=', 'REG-1']),
+    );
+  });
+
 });

@@ -4,10 +4,10 @@
 
 O Neo possui um frontend publicado, com modulos internos de responsabilidades distintas:
 
-- `apps/jornada/src/modules/jornada`: colaborador
-- `apps/jornada/src/modules/focall`: operacao de atendimento
-- `apps/jornada/src/modules/quick-forms`: formularios reutilizaveis
-- Hub: rota `/aplicativos` dentro de `apps/jornada`, sem frontend ou marca propria
+- `apps/neo/src/modules/jornada`: colaborador
+- `apps/neo/src/modules/tickets`: operacao de atendimento
+- `apps/neo/src/modules/quick-forms`: formularios reutilizaveis
+- Hub: rota `/aplicativos` dentro de `apps/neo`, com Neo identificado como plataforma e sem regra de negocio propria
 - Administracao Neo: rotas `/administracao/*`, capacidade transversal protegida por `ADMIN`
 
 Ambas continuam web, responsivas e com identidade compartilhada, mas nao devem dividir a mesma experiencia de navegacao.
@@ -16,24 +16,35 @@ Nao vamos criar dois frontends separados para celular e desktop dentro de um mes
 
 Etapa atual dessa separacao:
 
-- `apps/jornada` publica todos os modulos internos
-- `Focall` e o modulo operacional de atendimento
+- `apps/neo` publica todos os modulos internos
+- `Tickets` e o modulo operacional de atendimento
 - o portal `/aplicativos` ja introduz a escolha explicita de contexto para usuarios com mais de um app
 - o shell do colaborador mostra apenas navegacao `JORNADA`
-- o shell operacional mostra navegacao `HELP_HUB`
-- `apps/jornada` redireciona rotas antigas de atendimento para o HelpHub e de formularios para o QuickForms
+- o shell operacional mostra navegacao `TICKETS`
+- `apps/neo` redireciona rotas antigas de atendimento para o Tickets e de formularios para o QuickForms
 - `apps/api` continua compartilhado por enquanto
-- Focall e QuickForms usam rotas lazy para preservar entrypoint leve
+- Tickets e QuickForms usam rotas lazy para preservar entrypoint leve
 - QuickForms possui modulo proprio para biblioteca, fontes e builder; `/aplicativos` e a entrada neutra de modulos dentro do Jornada
 
 ## Theme direction
 
-Tema recomendado para a area logada da base 1:
+Direcao atual da area logada:
 
-- dark-first no shell administrativo
-- com `dark mode` e `light mode` compartilhando os mesmos tokens estruturais
-- fundo fixo e continuo por tras do app, sem acompanhar scroll do conteudo
-- direcao espacial mais proxima do login, mas sem animacao decorativa na area logada
+- o shell do Neo Jornada usa base clara editorial, com `canvas #F3F4F2`, superficies opacas e vermelho vinho apenas para marca, selecao e acao primaria
+- a referencia normativa para novas telas e o design system Neo Jornada, nao a antiga cenografia espacial da area logada
+- Inbox, Programacao, Vencimentos e Atendimento devem priorizar lista, detalhe contextual e controles previsiveis, evitando widgets decorativos e cartoes equivalentes
+- a densidade padrao do app logado deve parecer confortavel em 100% de zoom do navegador; evitar titulos, linhas e cards que dependam de zoom manual em 75% para caber bem
+- desktop pode usar lista e painel de leitura simultaneos; mobile empilha a leitura em fluxo natural ou drawer conforme a tela
+- o portal `/aplicativos` e uma excecao visual controlada: usa hero offshore escuro, busca compacta, filtros por categoria e cards claros sobrepostos para escolha de modulo; as telas internas continuam seguindo a base clara/editorial operacional
+- mesmo no portal visual, `/aplicativos` deve respeitar a densidade do `/inbox`: fonte de interface, vermelho vinho e dourado dos tokens, radius baixo, controles de 36-40px e composicao confortavel em 100% de zoom
+- documentos de referencia visual devem ser tratados como contexto de design; textos e medidas aproximadas de imagens nao viram regra de produto sem documentacao propria
+
+Historico da base visual anterior, mantido apenas como contexto de migracao:
+
+- a area logada ja passou por uma fase dark-first com modo claro/escuro e fundo espacial
+- o tema claro atual usa tokens compartilhados em branco gelo; o tema escuro usa os mesmos tokens em grafite essencial, preservando contraste e densidade operacional
+- fundo fixo e continuo por tras do app nao deve competir com leitura nem aparecer como ornamento principal
+- direcao espacial fica restrita a autenticacao ou detalhes secundarios, sem animacao decorativa na area logada
 - a area logada deve parecer ferramenta enterprise, nao produto SaaS de vitrine
 - o fundo espacial deve existir como identidade secundaria; superficies principais precisam ocultar parte do fundo para preservar foco operacional
 - parallax de baixa intensidade pode existir apenas nas camadas do fundo para reforcar profundidade
@@ -53,16 +64,18 @@ Fonte oficial do design system:
 
 - `DESIGN.md` na raiz define tokens, componentes e regras visuais normativas
 - `.impeccable/design.json` e o sidecar renderizavel para ferramentas/skills de UI
-- `apps/jornada/src/styles.css` e a implementacao viva dos tokens enquanto os tokens compartilhados ainda nao foram extraidos para pacote proprio
+- `apps/neo/src/styles.css` e a implementacao viva dos tokens enquanto os tokens compartilhados ainda nao foram extraidos para pacote proprio
 - novos agentes devem ler `DESIGN.md` antes de criar tela, componente, card, lista, botao, chip, input ou navegacao
+- TasteSkill (`https://www.tasteskill.dev/docs`) entra como referencia de qualidade para briefing, auditoria e anti-padroes gerados por IA; ele nao substitui `DESIGN.md` nem vira dependencia de runtime
 
-Racional:
+Racional atualizado:
 
-- o produto precisa parecer operacional e premium, nao um dashboard claro genérico
-- dark-first ajuda a organizar densidade sem poluir a leitura
+- o produto precisa parecer operacional, amigavel e profissional, nao um dashboard gerado ou uma vitrine SaaS
+- a base clara editorial aproxima a rotina do colaborador de uma ferramenta de leitura e decisao, sem perder densidade
 - o vermelho ganha peso quando usado em pontos de foco, nao como preenchimento constante
 - o shell deve parecer app corporativo refinado, nao conceito visual exuberante
 - a troca de tema nao deve depender de classes soltas por tela; tudo precisa sair de tokens centrais do admin
+- os estados de botao, input, foco, hover e status devem ter contraste proprio em cada tema; quando houver baixa legibilidade, corrigir primeiro `--admin-*` e `--status-*`, nao a pagina isolada
 - cards e painéis devem usar transparencias muito contidas; revelar o fundo apenas como sinal secundario, nunca com aspecto de vidro decorativo
 - superfícies da area logada podem ter opacidade leve, mas o resultado precisa parecer painel solido e profissional
 - planetas e satelites podem participar da composicao, mas como cenografia de fundo e nunca como foco funcional
@@ -128,6 +141,9 @@ Regras:
 - a preferencia de trava da sidebar fica persistida localmente, pois e uma preferencia ergonomica do operador
 - a animacao da sidebar deve usar `motion`, transicao curta e respeitar `prefers-reduced-motion`
 - mobile continua com navegacao inferior fixa, fluxo vertical natural e estado ativo no mesmo padrao visual da sidebar
+- o header global deve ser compacto e funcional, sem funil contextual ou slogan; o colaborador ja esta dentro do app para consultar e resolver informacoes
+- o portal `/aplicativos` deve destacar a descoberta de modulos com hero offshore, busca, filtros por categoria e cards de destino claros; proximas acoes ficam no Inbox para nao misturar catalogo com fila operacional
+- o Inbox deve destacar uma unica proxima acao acima dos filtros; filtros continuam secundarios, pois a lista existe para decisao rapida
 
 ## Motion direction
 
@@ -245,7 +261,7 @@ Todo fluxo novo do frontend deve manter uma protecao minima antes de ser conside
 - formularios com estado local precisam ser cobertos por teste de digitacao ou selecao quando houver risco de loop, evento sintetico ou campo repetido
 - `event.currentTarget.value` deve ser copiado para uma constante antes de entrar em updater funcional de estado
 - `npm run test:jornada:guards` protege automaticamente esse padrao nos arquivos `tsx` do Jornada
-- `npm run test:jornada` e `npm run test:help-hub` cobrem regressao rapida de componentes sem depender de navegador real
+- `npm run test:jornada` cobre regressao rapida de componentes sem depender de navegador real
 - Playwright fica reservado para os principais fluxos E2E, como login, abrir atendimento, comentar, transferir, resolver e avaliar
 - ocultar item de menu no frontend nunca substitui permissao no backend
 
@@ -325,6 +341,7 @@ Regra visual:
 - o viewport interno da lista deve herdar o raio e o fundo do card para evitar cantos claros ou quadrados dentro de superficies arredondadas
 - evitar badges redundantes quando o proprio filtro ja comunica contagem ou estado
 - sem hero grande, command rail, widgets administrativos ou cards de KPI na home do colaborador
+- no desktop, a Inbox pode manter lista e painel de leitura simultaneos quando isso reduzir navegacao e preservar contexto; a lista continua sendo a fonte principal, e o painel nao deve duplicar regras que pertencem a Vencimentos, Programacao ou Atendimento
 
 Racional:
 
@@ -400,6 +417,7 @@ Regra de produto:
 - a ordenacao padrao deve ser por vencimento mais proximo
 - acoes visiveis devem usar rotulos curtos para evitar quebra ou corte em telas compactas
 - quando houver sessao de colaborador, `/vencimentos` e `/inbox` consultam `GET /api/expiring-requirements/me`; sem sessao, fixtures continuam sendo o seam visual e de teste
+- contas recem-criadas por convite podem ainda nao ter vinculo externo de programacao ou qualificacoes; nesse caso os endpoints protegidos retornam listas vazias para a UI renderizar estado vazio, sem tratar a navegacao como erro
 - administradores recebem uma selecao global temporaria de colaborador no shell da Jornada para validacao da aplicacao; apos selecao explicita, Programacao, Vencimentos e Atendimento consultam contratos protegidos de preview, sem alterar a semantica de `/me`
 - resultados da busca administrativa global devem exibir o nome completo do colaborador, com matricula e unidade em linha secundaria, para distinguir nomes parecidos
 - esse seletor e recurso de teste/validacao e deve ser removido ou substituido por impersonacao auditada antes de uso operacional amplo
@@ -452,7 +470,7 @@ Regra de produto:
 - fora da janela de reabertura, a interface orienta abrir uma nova mensagem
 - sempre exibir titulo e mensagem na abertura; quando o assunto tiver formulario ativo, renderizar os campos adicionais antes da mensagem
 - se ja houver atendimento ativo do colaborador para o mesmo setor e assunto, uma nova abertura deve virar mensagem nesse atendimento, sem reiniciar SLA
-- nao expor fila, atendente responsavel, transferencia, SLA interno, regras, equipe ou nomenclatura Focall para o colaborador
+- nao expor fila, atendente responsavel, transferencia, SLA interno, regras, equipe ou nomenclatura Tickets para o colaborador
 - `/chat` redireciona para `/atendimento` enquanto o produto de conversa direta nao for retomado como experiencia separada
 
 ## Support administration direction
@@ -462,15 +480,15 @@ A configuracao de atendimento deve ficar separada da jornada do funcionario.
 Regra de produto:
 
 - `/atendimentos` e a tela operacional para atender, acompanhar, comentar, transferir, resolver e avaliar solicitacoes
-- essa tela pertence ao frontend `apps/help-hub`
+- essa tela pertence ao modulo Tickets em `apps/neo/src/modules/tickets`
 - `/atendimentos` deve separar visualmente `list`, `new` e `detail`: lista primeiro, criacao em fluxo dedicado e acompanhamento em detalhe dedicado
 - a listagem de atendimentos deve parecer tabela compacta no desktop, virar linhas acionaveis no mobile e rolar internamente quando houver muitas solicitacoes
 - o detalhe de atendimento deve ser uma experiencia de conversa de helpdesk: mensagens em bolhas, eventos de sistema discretos, campo de resposta no rodape do card e painel lateral compacto para contexto/acoes
 - para atendentes no desktop amplo, o detalhe pode abrir em `workspace` flutuante acoplado ao shell, preservando acesso a outras telas operacionais sem perder a conversa ativa
 - esse `workspace` deve nascer do mesmo detalhe de atendimento; muda o container, nao a regra de negocio
 - a fila/lista continua sendo a ancora principal do atendente para alternar rapidamente entre funcionarios
-- o modo padrao do atendente deve abrir em backlog da equipe, com filtros compactos para `Sem responsavel`, `Comigo` e `Aguardando`
-- se a operacao evoluir para Kanban, as colunas devem nascer das mesmas filas filtradas no backend (`novos e meus`, `sem responsavel`, `meus atendimentos`, `aguardando`, `alta prioridade`, `resolvidos`), evitando logica paralela no cliente
+- o modo padrao do atendente deve abrir em `Para assumir`, com filas compactas para `Meus atendimentos`, `Da equipe`, `SLA critico` e `Todos`
+- se a operacao evoluir para Kanban, as colunas devem nascer das mesmas filas filtradas no backend (`para-assumir`, `meus-atendimentos`, `da-equipe`, `sla-critico`, `todos`), evitando logica paralela no cliente
 - o Kanban deve ser um modo alternativo da mesma listagem operacional, nao um modulo com regras proprias; drag and drop muda ownership/status/equipe por acao de dominio
 - em mobile, preferir rota dedicada para detalhe do atendente, com secoes compactas por aba/drawer, sem flutuacao persistente
 - abertura de atendimento deve carregar setores do catalogo ativo; para usuarios de suporte/admin, pode usar fallback do catalogo administrativo quando o catalogo publico estiver vazio
@@ -497,7 +515,7 @@ Regra visual e tecnica:
 - a configuracao usa a mesma camada compacta do admin, sem novo visual system
 - evitar juntar manutencao de setores, assuntos, equipes, regras e formularios em uma unica tela com abas
 - a rota e carregada por lazy import/chunk separado para nao pesar a home mobile
-- no frontend do colaborador, rotas antigas de atendimento devem encaminhar para `apps/help-hub` e as de formularios para `apps/quick-forms`
+- rotas antigas de atendimento e formularios devem resolver localmente para os modulos nativos Tickets e QuickForms em `apps/neo`
 - o frontend nao deve carregar dependencias pesadas de designer visual na home mobile do funcionario
 - telas administrativas devem continuar densas, filtraveis e com controles pequenos
 - listas administrativas podem mostrar status e contagem, mas metricas profundas ficam para modulo futuro
@@ -570,37 +588,22 @@ Status em 22 de agosto de 2026:
 - a administracao de atendimento foi criada em `/atendimentos/configuracao`, carregada sob demanda e restrita no menu a `ADMIN`/`SUPPORT`
 - a tela de `/atendimentos` passou a tratar o detalhe como conversa de helpdesk e a abertura ganhou fallback seguro para setores cadastrados sem assuntos ativos
 
-Status em 31 de agosto de 2026:
+Status em 31 de agosto e 1 de setembro de 2026:
 
-- `apps/help-hub` criado como frontend operacional separado, com router, build, teste e PWA proprios
-- `apps/jornada` passou a manter o shell do colaborador sem navegacao operacional
-- o portal `/aplicativos` aponta `HELP_HUB` para o app operacional via `VITE_HELP_HUB_BASE_URL`, com fallback local em `http://localhost:3007`
-- backend e banco seguem compartilhados em `apps/api`, conforme `docs/adr/0004-separate-atendimento-frontend-first.md`
-- build do `apps/help-hub` usa `build.rolldownOptions.output.manualChunks` para separar React, Router, Query, Motion, Icons e React Aria do chunk principal
-
-Status em 1 de setembro de 2026:
-
-- `apps/quick-forms` ganhou router, build, teste e PWA proprios; o portal de modulos continua no router do Jornada
-- HelpHub e QuickForms nao exibem formulario de login: visitas anonimas delegam ao login central do Jornada e preservam apenas o app/caminho local desejado
-- navegacao entre apps nao compartilha `localStorage`: a origem emite um ticket SSO de uso unico e o destino cria sua propria sessao
-- ticket SSO nao carrega access/refresh token, e o destino usa `referrer=no-referrer` para reduzir exposicao do codigo efemero
-- `packages/frontend-core` agora concentra sessao, chamadas de auth, SSO, roteamento de acesso, tema, estilos, layout/login e catalogo do portal
-- HelpHub e QuickForms usam o pacote para toda a infraestrutura transversal e o mesmo shell; cada um altera apenas navegacao, icones e telas do proprio dominio
-- HelpHub passou a possuir localmente telas, testes, cliente e componentes de atendimento; QuickForms passou a possuir localmente biblioteca, fontes, builder, cliente e componentes de formularios
-- `AppShellLayout` esta em `packages/frontend-core` e recebe uma porta opcional de workspace; somente HelpHub injeta `getCase` e `addMessage`, enquanto QuickForms nao recebe a dock
-- o frame visual do shell (`neo-app-frame`), seus tokens e o header/sidebar pertencem ao `packages/frontend-core`; Jornada, HelpHub e QuickForms devem renderizar a mesma estrutura e somente especializar navegacao, icones e conteudo do dominio
+- houve uma fase intermediaria com frontends separados e pacote compartilhado, registrada nas ADRs `0004` e `0006`.
+- essa fase foi encerrada: o estado atual e um unico frontend Neo em `apps/neo`, com Tickets e QuickForms como modulos internos lazy.
 - `/administracao/aplicativos` e a tela administrativa lazy do catalogo central: lista filtravel a esquerda e formulario de criacao/edicao a direita, restrita a `ADMIN`
 - futuras telas de convite, usuarios, auditoria e revisao de acesso pertencem a `/administracao/*`, carregadas sob demanda e protegidas por `ADMIN`; a UI nunca decide a permissao final
-- `/aplicativos` usa `GridList` com busca por nome/descricao e badge de destino; `NATIVE` abre rota interna, redirecionamentos externos diretos nao emitem ticket, e `HELP_HUB`/`QUICK_FORMS` mantem SSO opaco por serem apps internos separados
+- `/aplicativos` usa `GridList` com busca por nome/descricao e badge de destino; `NATIVE` abre rota interna, redirecionamentos externos diretos nao emitem ticket, e `TICKETS`/`QUICK_FORMS` mantem SSO opaco por serem apps internos separados
 - o Hub usa `HubLayout` proprio, sem sidebar de Jornada: ele e a entrada neutra quando nao ha um app especifico na rota. A sidebar so e renderizada depois que o usuario entra na experiencia de um aplicativo.
 
 Status em 2 de setembro de 2026:
 
-- ADR `0006-unify-frontend-as-modules.md` foi materializada: `apps/jornada` e o unico frontend publicado e PWA do Neo.
-- `Jornada`, `Focall` e `QuickForms` sao modulos internos lazy em `apps/jornada/src/modules`; `HELP_HUB` permanece somente como codigo tecnico de grant/catalogo.
+- ADR `0006-unify-frontend-as-modules.md` foi materializada: `apps/neo` e o unico frontend publicado e PWA do Neo.
+- `Jornada`, `Tickets` e `QuickForms` sao modulos internos lazy em `apps/neo/src/modules`; `TICKETS` e o codigo ativo do catalogo de Tickets.
 - `/atendimentos` e `/formularios` mantem URLs diretas e entram no mesmo shell autenticado, sem recarga de origem nem ticket SSO interno.
 - o Hub resolve destinos `NATIVE` localmente; apenas entradas `REDIRECT` saem do frontend Neo.
-- `apps/help-hub` e `apps/quick-forms` permanecem temporariamente como referencias de migracao ate a rodada manual de smoke e a retirada controlada.
+- workspaces e pacote de frontend separados foram removidos apos a consolidacao no frontend unico.
 - a lateral dos modulos contem apenas navegacao e o atalho `Modulos`; nome e perfil ativo ficam no header.
 - o header usa `Select` do React Aria para exibir e trocar o modulo atual apenas entre grants da sessao; avatar e identidade ficam juntos.
 - a administracao global usa o mesmo shell do Neo, com lateral propria em `/administracao`, sem reutilizar a navegacao do Jornada.
@@ -611,7 +614,33 @@ Status em 3 de setembro de 2026:
 
 - `/administracao/usuarios` oferece convite administrativo com nome, email, matricula opcional e selecao explicita de modulos; papeis exibidos variam conforme o modulo selecionado
 - `/register` redireciona para o login central porque o fluxo inicial de conta e convite administrativo
-- `/comunicados` pertence ao Jornada e usa a fixture do contrato interno; o link ao Focall leva somente `communicationId` e `sourceModule` na navegacao
+- `/comunicados` pertence ao Jornada e usa a fixture do contrato interno; o link ao Tickets leva somente `communicationId` e `sourceModule` na navegacao
+
+Status em 1 de outubro de 2026:
+
+- `/administracao/usuarios` deve permitir concessao, revogacao e edicao de papeis tambem para aplicativos criados no catalogo que ainda nao tenham papeis proprios declarados; nesses casos a UI usa `Colaborador` (`MEMBER`) e `Gestor` (`MANAGER`) como conjunto padrao.
+- `Neo` e um app real do portal, com entrada nativa em `/aplicativos`; areas internas como Programacao e Vencimentos continuam fora do catalogo de apps.
+- convite administrativo pode receber `previewToken` somente fora de producao; em producao o usuario recebe email SMTP com link para `/convite?token=...`, define a senha e entra no app.
+- em desenvolvimento, `/administracao/usuarios` mostra o link de aceite retornado por `previewToken` logo apos criar o convite, para simular primeiro acesso de usuarios reais sem consultar a API manualmente.
+- usuarios com status `PENDING` exibem acao `Reenviar acesso`, que invalida o convite anterior no backend e devolve novo email/link de aceite conforme o ambiente.
+- `/convite` e uma rota publica independente do `AuthLayout` antigo e usa o mesmo sistema visual da pagina atual de login, incluindo fundo grafite/vinho, painel editorial e campos `neo-login`.
+
+Status em 23 de setembro de 2026:
+
+- a area logada do Neo Jornada passou a seguir o design system claro/editorial proposto para a Inbox, com superficies opacas, divisorias simples, vermelho vinho contido e tipografia de interface unica
+- `/inbox` ganhou composicao de fila de trabalho com filtros por abas, busca e painel de leitura lateral no desktop, sem bloco introdutorio
+- `/aplicativos` voltou ao portal visual offshore escuro, com imagem de plataforma no hero, busca compacta, filtros por categoria e cards claros acionaveis sobrepostos na divisa entre hero e conteudo
+- `/aplicativos` lista os apps reais disponiveis no ecossistema atual: `Jornada`, `Tickets`, `QuickForms` e `Neo`; nao deve listar areas internas como Programacao, Vencimentos, Documentos ou Relatorios como se fossem apps
+- Tickets Atendimentos segue a linguagem visual da `/inbox`: lista/detalhe, controles compactos, superficies claras/editoriais, vermelho vinho escasso e divulgacao progressiva para detalhes operacionais
+- a mesa operacional do Tickets usa filas orientadas a acao: `Para assumir`, `Meus atendimentos`, `Da equipe`, `SLA critico` e `Todos`; `Todos` e consulta, nao fluxo principal
+- no desktop, Tickets usa list/detail para preservar contexto; no mobile, a fila abre primeiro e o atendimento ocupa tela inteira, com `Detalhes` atras de controle explicito
+- o shell deve manter fundo neutro empresarial: o vermelho vinho fica reservado a marca, acoes e estados selecionados, sem tingir o canvas principal
+- no mobile, a identidade do usuario aparece no topo esquerdo com primeiro nome e perfil; `Perfil` fica no menu `Mais` para preservar uma barra inferior de icones enxuta
+- a densidade visual foi compactada para aproximar a sensacao de trabalho do app ao uso em 75% de zoom, mas com escala real em 100% no navegador
+- o fundo espacial permanece como linguagem das telas de autenticacao e legado visual, mas nao deve comandar as superficies principais da area logada
+- a Inbox deve se comportar como caixa de trabalho: abre em `Acao`, mostra somente itens acionaveis nesse filtro, reserva `Tudo` para a lista completa e deixa a acao primaria apenas no painel de detalhe
+- a Inbox deve abrir direto nos controles e na lista; evitar titulo editorial, slogan ou texto explicativo acima dos filtros
+- vermelho vinho `#9f2635` e dourado operacional `#a66a05` sao os tons de referencia para selecao, acoes e prazos na area logada clara
 
 ## What we should avoid
 

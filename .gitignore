@@ -21,3 +21,26 @@ dev-dist/
 coverage/
 data/
 .tmp/
+.tmp-*/
+.tmp_tar_inspect/
+.playwright-mcp/
+*.tgz
+
+# local deployment/source snapshots; canonical code lives in apps/
+jornada-api-production-current/
+jornada-api-source-v2/
+
+# downloaded generic agent skills; keep only tracked project skills
+.agents/skills/brandkit/
+.agents/skills/design-taste-frontend/
+.agents/skills/design-taste-frontend-v1/
+.agents/skills/full-output-enforcement/
+.agents/skills/gpt-taste/
+.agents/skills/high-end-visual-design/
+.agents/skills/image-to-code/
+.agents/skills/imagegen-frontend-mobile/
+.agents/skills/imagegen-frontend-web/
+.agents/skills/industrial-brutalist-ui/
+.agents/skills/minimalist-ui/
+.agents/skills/redesign-existing-projects/
+.agents/skills/stitch-design-taste/

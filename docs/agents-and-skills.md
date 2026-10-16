@@ -29,14 +29,16 @@ Ao alterar uma area, use o agent correspondente para checar fronteiras, riscos e
 | Drake/Crew Rotation | Piloto ativo controlado | Alimenta somente `ScheduleItem` por adapter backend, sob demanda, com auditoria de leitura e sem payload externo no frontend. |
 | Drake/Qualification Needs | Piloto ativo controlado | Alimenta somente `RequirementExpiration` por adapter backend, sob demanda, todas as necessidades do colaborador, ordenadas por vencimento e sem identificadores externos no retorno. |
 | Auth/identidade/acesso | Direcao materializada e em evolucao | Manter `Person`, `Employee`, `User` e grants por aplicacao separados de permissoes internas; convite, ciclo da conta e auditoria sensivel seguem ADRs `0008` e `0009`. |
-| Focall/suporte | Dominio mais detalhado | Modulo `focall` do frontend Neo; exigir testes de regressao por fluxo alterado. |
-| QuickForms | Dominio independente materializado | Modulo `quick-forms` do frontend Neo; formularios, versoes, solicitacoes e respostas nao pertencem ao Focall fora dos vinculos de integracao. |
+| Tickets/suporte | Dominio mais detalhado | Modulo `Tickets` do frontend Neo; exigir testes de regressao por fluxo alterado. |
+| QuickForms | Dominio independente materializado | Modulo `quick-forms` do frontend Neo; formularios, versoes, solicitacoes e respostas nao pertencem ao Tickets fora dos vinculos de integracao. |
 | Hub | Portal neutro materializado | Rota `/aplicativos` do Jornada com casca visual propria, sem sidebar de app; mostra apenas os modulos autorizados e nao recebe regra de negocio, marca ou login proprio. |
-| Administracao Neo | Capacidade transversal materializada | Rotas `/administracao/*` com lateral propria, restritas a `ADMIN`; mantem catalogo e grants sem pertencer ao Jornada, Focall ou QuickForms. |
-| Frontend core | Infraestrutura transversal materializada | `packages/frontend-core` concentra auth, tema e UI compartilhada; nao recebe telas ou regras de dominio. |
+| Administracao Neo | Capacidade transversal materializada | Rotas `/administracao/*` com lateral propria, restritas a `ADMIN`; mantem catalogo e grants sem pertencer ao Jornada, Tickets ou QuickForms. |
+| Frontend core | Consolidado no app Neo | Infraestrutura transversal de auth, tema, shell e UI vive em `apps/neo`, compartilhada pelos modulos internos lazy. |
+| Frontend UX | Regra materializada | Mudancas em shell, portal, Inbox e fluxos principais devem preservar funil de acao claro, leitura compacta e o design system do Neo Jornada: claro branco gelo como tema principal e escuro graphite essencial por tokens centrais; TasteSkill e referencia de auditoria, nao runtime. |
 | Performance frontend | Regra materializada | Rotas continuam lazy; fornecedores estaveis usam chunks de cache e React Aria deve ser importado por submodulo para preservar o entrypoint. |
+| Infra local | Regra materializada | Ambiente de desenvolvimento usa portas fixas (`3004`, `3006`, `55432`, `56379`), recria apenas containers Jornada e deve ser diagnosticado por `npm run dev:doctor` antes de atribuir falhas a UI ou dominio. |
 | Inbox/programacao/vencimentos | MVP funcional com partes ainda projetadas | Marcar novas decisoes como rascunho quando dependerem de backend/paginacao/cache ainda nao consolidados. |
-| Comunicados/notificacoes | Handoff Jornada -> Focall iniciado pelo ADR `0010` | Jornada mantem o comunicado; Focall recebe somente contexto de navegacao ate existir comando idempotente proprio. |
+| Comunicados/notificacoes | Handoff Jornada -> Tickets iniciado pelo ADR `0010` | Jornada mantem o comunicado; Tickets recebe somente contexto de navegacao ate existir comando idempotente proprio. |
 
 ## Agent map
 
@@ -78,6 +80,8 @@ Responsabilidade:
 - manter a gestao central de grants e papeis por aplicacao dentro de `auth`, sem deslocar isso para modulos de negocio
 - tratar `Application.code` como identificador imutavel; nome, descricao, imagem, ordem, status e destino pertencem ao catalogo administrativo
 - validar no backend que destino `NATIVE` usa rota interna e que `REDIRECT` usa URL HTTP(S); um app nunca recebe acesso apenas por aparecer no Hub
+- garantir que apps sem catalogo proprio usem somente os papeis contextuais padrao `MEMBER` e `MANAGER`, sem elevar `ADMIN` global
+- manter segredos de convite expostos apenas como preview fora de producao ate existir adaptador transacional de email
 
 Quando entra:
 
@@ -104,7 +108,7 @@ Responsabilidade:
 - manter a leitura externa por colaborador completa, auditada e convertida para `RequirementExpiration` antes de chegar ao frontend, sem expor identificadores externos
 - manter o preview administrativo separado do fluxo do colaborador, usando a selecao global do shell, referencia opaca curta e endpoints proprios de validacao
 - Programacao e Vencimentos podem se comportar como o colaborador selecionado quando o perfil for `ADMIN`, sem expor `workerId`, tenant, token ou payload Drake bruto
-- manter a acao de Vencimentos desacoplada da origem externa: ASO e treinamentos navegam para Atendimento com `setor`/`assunto`, e o Focall resolve catalogo, formulario e equipe
+- manter a acao de Vencimentos desacoplada da origem externa: ASO e treinamentos navegam para Atendimento com `setor`/`assunto`, e o Tickets resolve catalogo, formulario e equipe
 
 ### 6. Communications Routing Agent
 
@@ -124,7 +128,7 @@ Responsabilidade:
 - garantir que mensagens sejam persistidas no PostgreSQL e eventos em tempo real usem Redis/Socket.IO sem virar fonte da verdade
 - separar conversa, atendimento e solicitacao/chamado para permitir transferencia, fila e trabalho rastreavel
 - manter o nucleo de atendimento independente de Drake, Employee e telas do Jornada
-- distinguir acesso ao app `HELP_HUB`, papel no app e ownership do caso assumido
+- distinguir acesso ao app `TICKETS`, papel no app e ownership do caso assumido
 - usar `SupportTeam` como fonte configuravel de filas/equipes, evitando enum rigido como regra principal
 - aplicar permissao de atendimento por papel operacional e fila permitida
 - manter `SupportDepartment` e `SupportTopic` como camada simples para o funcionario
@@ -140,7 +144,7 @@ Responsabilidade:
 - integrar notificacoes externas por adapters apenas quando houver caso operacional claro
 - coletar avaliacao simples ao fim do atendimento para melhoria continua dos setores
 - usar factories quando criacao de codigo, caso, evento ou padrao operacional tiver regra propria
-- tratar `apps/help-hub` como app de experiencia operacional para atendimento e catalogo; `apps/quick-forms` e a experiencia propria de formularios
+- tratar Tickets e QuickForms como modulos internos lazy de `apps/neo`, com rotas, telas, clientes e testes proprios
 
 ### 8. Employee Inbox Agent
 
@@ -152,6 +156,7 @@ Responsabilidade:
 - manter apenas resumo e acao para modulo proprio, sem transformar a home em dashboard
 - no recorte operacional atual, incluir somente o proximo embarque/desembarque futuro, treinamentos com vencimento em ate 120 dias e atendimentos em `WAITING_REQUESTER`
 - evitar carregar detalhes que pertencem a programacao, vencimentos, chat ou perfil
+- manter a Inbox como fila de trabalho amigavel: lista e painel de leitura podem coexistir no desktop, mas a acao completa continua no modulo de origem
 
 ### 9. Privacy And LGPD Agent
 
@@ -210,17 +215,17 @@ Uso:
 
 Decisao atual:
 
-- `apps/jornada` e a experiencia do colaborador
-- `apps/help-hub` e a experiencia operacional de atendimento
-- `apps/quick-forms` e a experiencia independente para criacao e execucao de formularios
+- `apps/neo` e o unico frontend publicado do Neo
+- Tickets e a experiencia operacional de atendimento em `apps/neo/src/modules/tickets`
+- QuickForms e a experiencia independente de formularios em `apps/neo/src/modules/quick-forms`
 - o Hub e a rota neutra `/aplicativos` do Jornada, sem app ou nome proprio
-- HelpHub e QuickForms sempre delegam autenticacao ao login central do Jornada; o retorno usa SSO opaco de uso unico
-- HelpHub e QuickForms devem manter telas, clientes e testes de seus dominios dentro do proprio app; somente infraestrutura transversal entra em `packages/frontend-core`
-- `AppShellLayout` e os estilos do frame visual sao infraestrutura transversal: alteracoes de shell, header, sidebar ou tokens devem ser feitas e testadas em `packages/frontend-core`, nunca apenas numa copia local do Jornada
-- `AppShellLayout` recebe uma porta opcional de workspace; o core nao pode importar cliente, tipo ou regra de suporte diretamente
+- modulos internos usam a mesma sessao autenticada e nunca emitem ticket SSO entre rotas nativas
+- modulos devem manter telas, clientes e testes dentro do proprio diretorio de modulo
+- alteracoes de shell, header, sidebar ou tokens devem ser feitas no shell compartilhado de `apps/neo`
+- o shell nao deve importar regra de dominio diretamente; Tickets e QuickForms entram por rotas lazy e contratos explicitos
 - `apps/api` continua compartilhado como monolito modular por contexto
 - nao separar banco ate existir sinal operacional real
-- decisao registrada em `docs/adr/0004-separate-atendimento-frontend-first.md`
+- decisao registrada em `docs/adr/0006-unify-frontend-as-modules.md`
 
 ### Skill: `jornada-drake-contracts`
 
@@ -257,6 +262,8 @@ Validacao minima:
 - registro de status da fonte: futura, preparada, ativa, suspensa ou removida
 - teste de contrato apenas quando a fonte virar ativa ou preparada para consumo
 - conferencia de auditoria/correlacao sem expor dado sensivel em log
+- recebimentos externos, quando ativados, devem ser idempotentes por chave de
+  payload e nao criar novo estado para reenvio identico
 - atualizacao de `docs/internal-contracts-and-sources.md` sempre que uma fonte mudar de status
 
 ### Loop 2 - Event processing loop
@@ -481,7 +488,7 @@ Validacao minima:
 
 - teste semantico de interacao alterada
 - `npm run test:jornada:guards` quando aplicavel
-- `npm run test:jornada`, `npm run test:help-hub` ou `npm run test:quick-forms`, conforme o app alterado
+- `npm run test:jornada`, focando os arquivos do modulo alterado quando aplicavel
 - build web quando houver mudanca de rota, shell, bundle ou dependencia
 
 ## Harness
@@ -494,17 +501,17 @@ Objetivo:
 
 Implementacao atual:
 
-- `apps/jornada/src/features/contracts/internal-contracts.ts`
-- `apps/jornada/src/features/contracts/internal-contract-fixtures.ts`
-- `apps/jornada/src/features/profile/profile-api.ts`
-- `apps/jornada/src/features/contracts/internal-contract-fixtures.test.ts`
-- `apps/jornada/src/views/dashboard-page.test.tsx`
-- `apps/jornada/src/views/expirations-page.tsx`
+- `apps/neo/src/features/contracts/internal-contracts.ts`
+- `apps/neo/src/features/contracts/internal-contract-fixtures.ts`
+- `apps/neo/src/features/profile/profile-api.ts`
+- `apps/neo/src/features/contracts/internal-contract-fixtures.test.ts`
+- `apps/neo/src/views/dashboard-page.test.tsx`
+- `apps/neo/src/views/expirations-page.tsx`
 
 Consumo inicial:
 
-- `apps/jornada/src/views/dashboard-page.tsx` adapta as fixtures para `Inbox`, `Programacao` e `Perfil`; quando ha sessao, `/perfil` consome `GET /api/auth/me/profile` e salva apenas preferencias editaveis em `PATCH /api/auth/me/profile`
-- `apps/jornada/src/views/expirations-page.tsx` mantem a tela propria de vencimentos do trabalhador, usando view-model em `features/requirements`
+- `apps/neo/src/views/dashboard-page.tsx` adapta as fixtures para `Inbox`, `Programacao` e `Perfil`; quando ha sessao, `/perfil` consome `GET /api/auth/me/profile` e salva apenas preferencias editaveis em `PATCH /api/auth/me/profile`
+- `apps/neo/src/views/expirations-page.tsx` mantem a tela propria de vencimentos do trabalhador, usando view-model em `features/requirements`
 
 ### Local webhook harness
 

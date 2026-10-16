@@ -53,8 +53,8 @@ Use `.env` baseado em `.env.example`.
 ```env
 NODE_ENV=development
 PORT=3004
-DATABASE_URL=postgresql://jornada:jornada@localhost:5434/jornada?schema=public
-REDIS_URL=redis://localhost:6379
+DATABASE_URL=postgresql://jornada:jornada@localhost:55432/jornada?schema=public
+REDIS_URL=redis://localhost:56379
 DRAKE_WEBHOOK_BEARER_TOKEN=replace-with-a-strong-random-token
 DRAKE_WEBHOOK_AUTH_DISABLED=false
 JWT_ACCESS_SECRET=replace-with-a-strong-random-token

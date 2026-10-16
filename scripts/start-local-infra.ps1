@@ -1,6 +1,6 @@
 param(
-  [int]$StartPort = 5434,
-  [int]$MaxPort = 5450
+  [int]$PostgresPort = 55432,
+  [int]$RedisPort = 56379
 )
 
 Set-StrictMode -Version Latest
@@ -21,40 +21,6 @@ function Ensure-EnvFile {
   if (-not (Test-Path -LiteralPath $TargetPath)) {
     Copy-Item -LiteralPath $ExamplePath -Destination $TargetPath
   }
-}
-
-function Get-FirstFreePort {
-  param(
-    [int]$InitialPort,
-    [int]$FinalPort
-  )
-
-  for ($port = $InitialPort; $port -le $FinalPort; $port++) {
-    $inUse = Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue
-    if (-not $inUse) {
-      return $port
-    }
-  }
-
-  throw "Nenhuma porta livre encontrada entre $InitialPort e $FinalPort."
-}
-
-function Get-ExistingJornadaPort {
-  $dockerOutput = docker ps --format "{{.Names}}|{{.Ports}}" 2>$null
-  if (-not $dockerOutput) {
-    return $null
-  }
-
-  $line = $dockerOutput | Where-Object { $_ -like 'jornada-postgres|*' } | Select-Object -First 1
-  if (-not $line) {
-    return $null
-  }
-
-  if ($line -match '0\.0\.0\.0:(\d+)->5432') {
-    return [int]$Matches[1]
-  }
-
-  return $null
 }
 
 function Set-OrAppendEnvValue {
@@ -78,39 +44,91 @@ function Set-OrAppendEnvValue {
   Set-Content -LiteralPath $FilePath -Value $updated
 }
 
-function Update-ApiDatabaseUrl {
+function Get-ProcessCommandLine {
+  param([int]$ProcessId)
+
+  $process = Get-CimInstance Win32_Process -Filter "ProcessId = $ProcessId" -ErrorAction SilentlyContinue
+  if ($null -eq $process) {
+    return ''
+  }
+
+  return [string]$process.CommandLine
+}
+
+function Get-DockerContainersPublishingPort {
+  param([int]$Port)
+
+  $lines = @(docker ps -a --format "{{.Names}}|{{.Ports}}" 2>$null)
+  return @($lines | Where-Object { $_ -match "[:.]$Port->" })
+}
+
+function Assert-PortIsSafeForJornadaInfra {
   param(
-    [string]$FilePath,
-    [int]$Port
+    [int]$Port,
+    [string]$Label,
+    [string[]]$AllowedContainerNames
   )
 
-  $content = Get-Content -LiteralPath $FilePath -Raw
-  $fullValue = "postgresql://jornada:jornada@localhost:$Port/jornada?schema=public"
-
-  if ($content -match '(?m)^DATABASE_URL=') {
-    $updated = [regex]::Replace($content, '(?m)^DATABASE_URL=.*$', "DATABASE_URL=$fullValue")
-  }
-  else {
-    $separator = if ($content.EndsWith("`n")) { '' } else { [Environment]::NewLine }
-    $updated = "$content$separator" + "DATABASE_URL=$fullValue" + [Environment]::NewLine
+  foreach ($line in Get-DockerContainersPublishingPort -Port $Port) {
+    $name = ($line -split '\|', 2)[0]
+    if ($AllowedContainerNames -notcontains $name) {
+      throw "A porta $Port ($Label) esta publicada pelo container externo '$name'. Pare esse container ou ajuste o ambiente antes de subir o Jornada."
+    }
   }
 
-  Set-Content -LiteralPath $FilePath -Value $updated
+  $owners = @(Get-NetTCPConnection -State Listen -LocalPort $Port -ErrorAction SilentlyContinue |
+    Select-Object -ExpandProperty OwningProcess -Unique)
+
+  if ($owners.Count -eq 0) {
+    return
+  }
+
+  $publishedByAllowedContainer = @(Get-DockerContainersPublishingPort -Port $Port |
+    Where-Object {
+      $name = ($_ -split '\|', 2)[0]
+      $AllowedContainerNames -contains $name
+    }).Count -gt 0
+
+  if ($publishedByAllowedContainer) {
+    return
+  }
+
+  foreach ($owner in $owners) {
+    $commandLine = Get-ProcessCommandLine -ProcessId $owner
+    throw "A porta $Port ($Label) esta ocupada pelo processo $owner, que nao parece ser da infra Jornada. Comando: $commandLine"
+  }
+}
+
+function Remove-JornadaInfraContainer {
+  param([string]$Name)
+
+  $containerId = docker ps -a --filter "name=^/$Name$" --format "{{.ID}}" 2>$null
+  if (-not $containerId) {
+    return
+  }
+
+  Write-Host "Recriando container local $Name..."
+  docker rm -f $Name | Out-Null
 }
 
 Ensure-EnvFile -TargetPath $rootEnvPath -ExamplePath $rootEnvExamplePath
 Ensure-EnvFile -TargetPath $apiEnvPath -ExamplePath $apiEnvExamplePath
 
-$selectedPort = Get-ExistingJornadaPort
-if (-not $selectedPort) {
-  $selectedPort = Get-FirstFreePort -InitialPort $StartPort -FinalPort $MaxPort
-}
+Assert-PortIsSafeForJornadaInfra -Port $PostgresPort -Label 'PostgreSQL Jornada' -AllowedContainerNames @('jornada-postgres')
+Assert-PortIsSafeForJornadaInfra -Port $RedisPort -Label 'Redis Jornada' -AllowedContainerNames @('jornada-redis')
 
-Set-OrAppendEnvValue -FilePath $rootEnvPath -Key 'JORNADA_POSTGRES_PORT' -Value $selectedPort
-Update-ApiDatabaseUrl -FilePath $apiEnvPath -Port $selectedPort
+Remove-JornadaInfraContainer -Name 'jornada-postgres'
+Remove-JornadaInfraContainer -Name 'jornada-redis'
 
-Write-Host "Usando porta PostgreSQL local: $selectedPort"
+Set-OrAppendEnvValue -FilePath $rootEnvPath -Key 'JORNADA_POSTGRES_PORT' -Value $PostgresPort
+Set-OrAppendEnvValue -FilePath $rootEnvPath -Key 'JORNADA_REDIS_PORT' -Value $RedisPort
+Set-OrAppendEnvValue -FilePath $apiEnvPath -Key 'NODE_ENV' -Value 'development'
+Set-OrAppendEnvValue -FilePath $apiEnvPath -Key 'DATABASE_URL' -Value "postgresql://jornada:jornada@localhost:$PostgresPort/jornada?schema=public"
+Set-OrAppendEnvValue -FilePath $apiEnvPath -Key 'REDIS_URL' -Value "redis://localhost:$RedisPort"
+
+Write-Host "Usando portas locais fixas: PostgreSQL $PostgresPort, Redis $RedisPort"
 docker compose up -d --force-recreate postgres redis
 
-Write-Host "Infra local pronta."
-Write-Host "DATABASE_URL atualizado para localhost:$selectedPort em apps/api/.env"
+Write-Host 'Infra local pronta.'
+Write-Host "DATABASE_URL atualizado para localhost:$PostgresPort em apps/api/.env"
+Write-Host "REDIS_URL atualizado para localhost:$RedisPort em apps/api/.env"

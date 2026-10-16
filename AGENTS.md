@@ -13,7 +13,7 @@ Fases do produto:
 
 ## Current source of truth
 
-- Frontend e API atuais: `apps/jornada` e `apps/api`. Jornada, Focall e QuickForms sao modulos internos lazy do Neo; o portal neutro fica em `/aplicativos`, sem ser um quarto app.
+- Frontend e API atuais: `apps/neo` e `apps/api`. Jornada, Tickets e QuickForms sao modulos internos lazy do Neo; o portal neutro fica em `/aplicativos`, sem ser um quarto app.
 - Subdominio planejado: `jornada.granhub.com.br`
 - Porta interna atual: `3004`
 - Stack base da API: `NestJS 11.2.1` com `Node.js 24 LTS`

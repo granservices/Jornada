@@ -38,8 +38,8 @@ Regras:
 - o atendimento aberto no `workspace` precisa ficar refletido na URL para sobreviver a `F5`, link direto e retomada de sessao
 - a fila nao pode desaparecer quando o atendente alterna entre casos; ela continua como lista principal ou como drawer/coluna recolhivel, conforme largura disponivel
 - alternancia entre funcionarios deve acontecer por fila, proximos/anterior e busca, nao por pilha de janelas flutuantes
-- ao entrar no app, perfis operacionais devem cair direto em `/atendimentos?fila=novos-e-meus`, reduzindo cliques e reforcando o backlog como home de trabalho
-- a fila do operador precisa expor visoes prontas de `novos e meus`, `sem responsavel`, `meus atendimentos`, `aguardando`, `alta prioridade` e `resolvidos`
+- ao entrar no app, perfis operacionais devem cair direto em `/atendimentos?fila=para-assumir`, reduzindo cliques e reforcando os casos sem atendente como primeira acao
+- a fila do operador precisa expor visoes prontas de `Para assumir`, `Meus atendimentos`, `Da equipe`, `SLA critico` e `Todos`
 - o `workspace` pode ser minimizado, fixado e reaberto, mantendo rascunho de mensagem local por atendimento enquanto a sessao estiver ativa
 - contexto operacional detalhado deve ir para um painel secundario recolhivel dentro do `workspace`; a conversa continua sendo o foco dominante
 - a mesma base de detalhe deve servir ao `workspace` desktop e a tela dedicada mobile, evitando dois fluxos de negocio diferentes
@@ -163,6 +163,9 @@ Regras:
 - na UX, motivo tipificado e comentario devem ficar separados; o motivo alimenta regra/auditoria e o comentario registra contexto humano
 - o Inbox do colaborador mostra apenas atendimento acionavel: resposta aguardando retorno ou atendimento resolvido recente sem avaliacao
 - a fila operacional mostra SLA por `dueAt` e nao deve inventar tempo de responsabilidade enquanto o contrato nao expuser o marco real
+- a mesa operacional de `/atendimentos` abre em `Para assumir`; as demais visoes sao `Meus atendimentos`, `Da equipe`, `SLA critico` e `Todos`
+- `Para assumir` contem atendimentos ativos sem atendente; `Meus atendimentos` contem atendimentos ativos atribuidos ao usuario atual; `Da equipe` e cobertura/coordenação; `Todos` e consulta ampla
+- o detalhe do atendimento deve mostrar conversa e acao primaria contextual primeiro; campos, historico, transferencia e demais acoes ficam em `Detalhes` por divulgacao progressiva
 - regras de campo sao configuradas pelo builder proprio e executadas no frontend com runtime leve de campos tipados
 - backend reavalia visibilidade e obrigatoriedade antes de salvar para evitar bypass por cliente alterado
 - condicional de campo deve depender apenas de campos anteriores para evitar ciclos e formulario confuso

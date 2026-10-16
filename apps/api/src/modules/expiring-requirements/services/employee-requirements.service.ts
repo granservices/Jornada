@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { AuditAction, Role } from '@prisma/client';
 import type { AuthenticatedUser } from '../../../common/auth/authenticated-user';
 import { AuditService } from '../../../common/audit/audit.service';
@@ -20,12 +20,24 @@ export class EmployeeRequirementsService {
 
   async listMine(user: AuthenticatedUser) {
     const employee = await this.findEmployee(user.id);
+    if (!employee) {
+      return this.emptyRequirements();
+    }
+
     const worker = await this.workers.findWorker(
       employee.externalEmployeeId ?? employee.employeeNumber ?? '',
       employee.employeeNumber,
     );
     if (!worker) {
-      throw new NotFoundException('Nao foi localizado vinculo de qualificacoes para este colaborador.');
+      await this.audit.record({
+        actorUserId: user.id,
+        action: AuditAction.READ,
+        entityType: 'EmployeeRequirement',
+        entityId: employee.id,
+        metadata: { source: 'DRAKE', scope: 'self', itemCount: 0, missingWorkerLink: true },
+      });
+
+      return this.emptyRequirements();
     }
 
     const result = await this.listWorkerRequirements(worker.workerId);
@@ -83,7 +95,7 @@ export class EmployeeRequirementsService {
     });
     const employee = user?.person.employee;
     if (!employee || (!employee.externalEmployeeId && !employee.employeeNumber)) {
-      throw new NotFoundException('Sua conta ainda nao esta vinculada a um colaborador com qualificacoes externas.');
+      return null;
     }
     return employee;
   }
@@ -120,6 +132,10 @@ export class EmployeeRequirementsService {
       .sort((first, second) => this.expirationSortValue(first.expiresAt) - this.expirationSortValue(second.expiresAt));
 
     return { items, source: { label: 'Drake', updatedAt: new Date().toISOString() } };
+  }
+
+  private emptyRequirements() {
+    return { items: [], source: { label: 'Drake', updatedAt: new Date().toISOString() } };
   }
 
   private daysToExpire(expiresAt: string | null) {

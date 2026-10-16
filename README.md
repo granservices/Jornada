@@ -7,11 +7,9 @@ Monorepo do `Neo`, a plataforma operacional mobile-first da GranServices.
 ```text
 apps/
   api/       -> backend NestJS modular
-  jornada/   -> frontend e PWA unificados do Neo
-packages/
-  frontend-core/ -> infraestrutura compartilhada em retirada gradual
-docs/    -> roteiro, arquitetura e checklist
-legacy/  -> snapshot isolado da base antiga
+  neo/       -> frontend e PWA unificados do Neo
+docs/      -> roteiro, contratos, arquitetura viva e checklist
+scripts/   -> automacao local essencial
 ```
 
 ## App ativo agora
@@ -37,7 +35,8 @@ npm run test:api:cov
 npm run dev:jornada
 npm run build:jornada
 npm run test:jornada
-npm run test:frontend-core
+npm run check
+npm audit --omit=dev --audit-level=critical
 ```
 
 `npm run dev` e o comando local recomendado: sobe Postgres e Redis, aguarda a
@@ -49,7 +48,14 @@ ou API presos em codigo antigo. Se alguma porta estiver ocupada por processo
 externo ao repo, ele interrompe com uma mensagem clara para evitar matar outro
 ambiente por engano.
 
-`npm run infra:up` procura a primeira porta livre a partir de `5434`, atualiza o `DATABASE_URL` local da API e sobe apenas `postgres` e `redis`.
+`npm run infra:up` usa portas locais fixas para reduzir variacao entre sessoes:
+PostgreSQL em `55432` e Redis em `56379`. O comando recria apenas os containers
+`jornada-postgres` e `jornada-redis`, atualiza `.env` e `apps/api/.env`, e
+bloqueia a execucao quando a porta estiver ocupada por processo ou container
+externo ao Jornada.
+
+`npm run dev:doctor` valida Docker, containers, portas, `.env`, `DATABASE_URL`,
+`REDIS_URL` e o health check da API quando ela ja estiver rodando.
 
 Com a infra local no ar, a API usa o Redis em `REDIS_URL` para processar os webhooks do Drake de forma assincrona via BullMQ.
 
@@ -61,4 +67,4 @@ O `docker-compose.yml` da raiz prepara o ambiente local com:
 - `postgres`
 - `redis`
 
-`apps/jornada` roda em `http://localhost:3006`. O Hub fica em `http://localhost:3006/aplicativos`; Focall e QuickForms usam, respectivamente, `/atendimentos` e `/formularios` no mesmo frontend autenticado.
+`apps/neo` roda em `http://localhost:3006`. O Hub fica em `http://localhost:3006/aplicativos`; Jornada, Tickets e QuickForms usam, respectivamente, `/inbox`, `/atendimentos` e `/formularios` no mesmo frontend autenticado.

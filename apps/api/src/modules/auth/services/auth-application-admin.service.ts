@@ -24,8 +24,9 @@ import { UpdateManagedApplicationDto } from '../dto/update-managed-application.d
 import { areValidApplicationRoles } from '../application-role-catalog';
 
 const NATIVE_APPLICATION_ENTRY_PATHS = {
+  NEO: '/aplicativos',
   JORNADA: '/inbox',
-  HELP_HUB: '/atendimentos',
+  TICKETS: '/atendimentos',
   QUICK_FORMS: '/formularios',
 } as const;
 

@@ -1,4 +1,4 @@
-import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import { ForbiddenException } from '@nestjs/common';
 import { AuditAction, Role, UserStatus } from '@prisma/client';
 import type { AuthenticatedUser } from '../../../common/auth/authenticated-user';
 import type { AuditService } from '../../../common/audit/audit.service';
@@ -105,11 +105,26 @@ describe('EmployeeRequirementsService', () => {
     expect(result.items[3]).toEqual(expect.objectContaining({ status: 'PENDING', severity: 'medium', expiresAt: null }));
   });
 
-  it('does not call Drake for a user without an employee relationship', async () => {
+  it('returns an empty requirement list for a user without an employee relationship', async () => {
     prisma.user.findUnique.mockResolvedValue({ person: { employee: null } });
 
-    await expect(service.listMine(user)).rejects.toBeInstanceOf(NotFoundException);
+    await expect(service.listMine(user)).resolves.toEqual({
+      items: [],
+      source: expect.objectContaining({ label: 'Drake' }),
+    });
     expect(workers.findWorker).not.toHaveBeenCalled();
+    expect(drake.listExpiringNeeds).not.toHaveBeenCalled();
+  });
+
+  it('returns an empty requirement list when Drake has no worker match for the signed-in employee', async () => {
+    prisma.user.findUnique.mockResolvedValue({ person: { employee: { id: 'employee-1', employeeNumber: 'REG-1', externalEmployeeId: null } } });
+    workers.findWorker.mockResolvedValue(null);
+
+    await expect(service.listMine(user)).resolves.toEqual({
+      items: [],
+      source: expect.objectContaining({ label: 'Drake' }),
+    });
+    expect(drake.listExpiringNeeds).not.toHaveBeenCalled();
   });
 
   it('blocks preview worker search for non-admin users', async () => {

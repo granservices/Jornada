@@ -44,9 +44,9 @@ describe('AuthSsoTicketService', () => {
     applicationAccess = {
       listAccessibleApplications: jest.fn().mockResolvedValue([
         {
-          id: 'app-help-hub',
-          code: 'HELP_HUB',
-          name: 'HelpHub',
+          id: 'app-tickets',
+          code: 'TICKETS',
+          name: 'Tickets',
           description: 'Workspace operacional',
           entryPath: '/atendimentos',
           isDefault: false,
@@ -80,7 +80,7 @@ describe('AuthSsoTicketService', () => {
   });
 
   it('issues a short-lived ticket only for an application the user can access', async () => {
-    await expect(service.issue(actor, 'HELP_HUB')).resolves.toEqual({
+    await expect(service.issue(actor, 'TICKETS')).resolves.toEqual({
       ticket: 'opaque-ticket',
       expiresInSeconds: 60,
     });
@@ -88,7 +88,7 @@ describe('AuthSsoTicketService', () => {
     expect(prisma.authSsoTicket.create).toHaveBeenCalledWith({
       data: expect.objectContaining({
         userId: 'user-1',
-        applicationId: 'app-help-hub',
+        applicationId: 'app-tickets',
         tokenHash: 'opaque-ticket-hash',
       }),
     });
@@ -97,7 +97,7 @@ describe('AuthSsoTicketService', () => {
       expect.objectContaining({
         userId: 'user-1',
         email: 'colaborador@granservices.com.br',
-        reason: 'application=HELP_HUB',
+        reason: 'application=TICKETS',
       }),
     );
   });
@@ -112,7 +112,7 @@ describe('AuthSsoTicketService', () => {
     prisma.authSsoTicket.findUnique.mockResolvedValue({
       id: 'ticket-1',
       userId: 'user-1',
-      application: { code: 'HELP_HUB' },
+      application: { code: 'TICKETS' },
       consumedAt: null,
       expiresAt: new Date(Date.now() + 30_000),
     });
@@ -134,7 +134,7 @@ describe('AuthSsoTicketService', () => {
       'SSO_TICKET_CONSUMED',
       expect.objectContaining({
         userId: 'user-1',
-        reason: 'application=HELP_HUB',
+        reason: 'application=TICKETS',
       }),
     );
   });
@@ -143,7 +143,7 @@ describe('AuthSsoTicketService', () => {
     prisma.authSsoTicket.findUnique.mockResolvedValue({
       id: 'ticket-1',
       userId: 'user-1',
-      application: { code: 'HELP_HUB' },
+      application: { code: 'TICKETS' },
       consumedAt: null,
       expiresAt: new Date(Date.now() + 30_000),
     });

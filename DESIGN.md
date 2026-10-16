@@ -1,6 +1,6 @@
 ---
 name: Jornada
-description: Operational employee hub with compact enterprise UI, Neo graphite surfaces, and precise linear structure.
+description: Operational employee hub with compact enterprise UI, light editorial Jornada surfaces, and precise linear structure.
 colors:
   admin-canvas: "#101113"
   admin-canvas-elevated: "#141619"
@@ -97,16 +97,29 @@ components:
 
 Neo is an operational platform, not a marketing SaaS dashboard. The interface should feel like a compact command surface used every day by employees, support teams, and administrators: calm, dense, legible, and precise.
 
-The visual world is dark-first, graphite-based, and lightly branded with a muted red accent. Fine linear grids and one or two diffuse red fields establish depth; working panels remain solid and rectangular for repeated use.
+The current app visual world follows the approved `/inbox` direction: light editorial operational surfaces, restrained graphite text, cool gray panels, and sparse wine accents. Light mode is the primary working theme. Dark mode is a real graphite companion theme for lower-light use, implemented through the same central tokens rather than page-local overrides.
 
 **Key Characteristics:**
 
 - Compact enterprise density.
-- Dark-first graphite surfaces with a controlled light mode.
+- Light editorial operational surfaces, with an essential graphite dark mode using the same surface, status, button, and text tokens.
 - Muted red used as rare operational accent.
 - Almost-square panels and controls.
 - Straight edges, low blur, low transparency, and no glass-card excess.
 - One reusable surface system across Inbox, Atendimentos, Configuracao, Formularios, Perfil, Programacao, and Vencimentos.
+- A visible action funnel before equivalent module choices, so users always know the next operational move.
+- Tickets Atendimentos uses action-oriented queues: Para assumir, Meus atendimentos, Da equipe, SLA critico and Todos.
+
+## Design Review Protocol
+
+TasteSkill (`https://www.tasteskill.dev/docs`) is an external reference for design judgment, not a runtime dependency. Use it as a critique checklist alongside Impeccable:
+
+- Read the brief and user intent before changing layout.
+- Audit the existing surface before redesigning it.
+- Preserve URL structure, navigation labels, and form field names unless a product decision says otherwise.
+- Reject generic generated patterns that make every action look equally important.
+- Keep one page theme, one shape system, and one accent discipline per surface.
+- Run a hard pre-flight before shipping: the next action must be findable within seconds, copy must name the action, and empty/loading/error states must guide recovery.
 
 ## Colors
 
@@ -133,6 +146,7 @@ The palette is graphite, cool gray, and wine red. It avoids bright SaaS blues an
 - **Secondary Text**: Supporting copy and row metadata.
 - **Muted Text**: Hints, labels, timestamps, and quiet counters.
 - **Light Mode Surface**: Light mode is a muted lunar gray system, not a pure-white theme. Shells and cards must avoid `#fff`/near-white fills so the app stays comfortable for long operational sessions.
+- **Dark Mode Surface**: Dark mode is graphite, not decorative black. Canvas, shell, cards, inputs, buttons, focus, and status chips must all switch through `--admin-*` and `--status-*` tokens with readable foregrounds.
 
 ### Named Rules
 
@@ -225,12 +239,14 @@ Borders are one pixel and functional. Avoid large rounded cards, nested decorati
 ### Application Catalog
 
 - **Structure:** The module portal uses React Aria `GridList`, with one actionable item per authorized application.
-- **Media:** Each item leads with its transparent PNG application illustration on a foreground layer, fitted without cropping. It ends at the reading base in the resting state and can overlap that base slightly on hover without obscuring its copy.
-- **Identification:** A contextual corner icon and restrained image tint distinguish the modules: Jornada uses a route mark in red, QuickForms a form mark in amber, and HelpHub a support mark in green-aqua. These colors identify the app only; they do not replace global semantic colors.
-- **Transparency:** Catalog media is deliberately translucent, with a dark transparent text base. Copy inside this base stays white in both themes so the Neo canvas remains present without reducing contrast.
-- **Hover:** The active illustration may project slightly beyond its card, while its card is raised above neighboring items. The reading base stays fixed and unobscured.
+- **Hero boundary:** `/aplicativos` is the only logged-in surface allowed to use the offshore hero image. The first card row must overlap the hero/content boundary so the page reads as one portal, not a hero followed by an unrelated grid.
+- **Density:** The portal must work at 100% browser zoom. Hero type, filters, cards, help strip, and footer stay compact enough for the main module choices to appear in the first viewport on common laptop/desktop heights.
+- **Media:** Each item may use its transparent PNG application illustration as secondary context, fitted without cropping and kept behind the text hierarchy. Media never covers titles, descriptions, or the action row.
+- **Identification:** Icons use the shared color discipline: Jornada in wine, QuickForms in muted amber, Tickets/Neo in graphite. Avoid green, blue, or per-app decorative palettes unless the design system is explicitly revised.
+- **Surface:** Catalog cards are light operational panels using `--admin-surface-*`, `--admin-border`, 6px radius, and restrained shadow. Do not return to dark translucent text bases or glass cards.
+- **Hover:** Hover can lift the card slightly, strengthen the wine border, and move the arrow; it should not enlarge the layout or obscure neighboring items.
 - **Interaction:** The whole item is the action surface. Keyboard focus, hover, press, disabled, and external SSO loading states are expressed on the item rather than through a nested button or link.
-- **Findability:** A compact search field filters items by name and description. A small destination chip distinguishes native routes from external redirections without competing with the app identity.
+- **Findability:** A compact search field and compact category filters use the same control geometry as `/inbox`. Destination details are implied by the module card and action label unless the route is external.
 
 ### Application Catalog Administration
 

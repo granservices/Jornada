@@ -124,6 +124,13 @@ O fluxo inicial oficial para novas contas e convite administrativo.
 - o destinatario escolhe a propria senha em um convite expiravel e de uso
   unico, valido por sete dias; o segredo deve ser armazenado somente como
   hash. Reenvio invalida convite anterior ainda ativo.
+- ambientes fora de producao podem receber `previewToken` no retorno do
+  convite para facilitar testes e suporte local; producao nunca deve expor o
+  segredo do convite fora do canal transacional.
+- o envio inicial usa SMTP com as mesmas variaveis do CrewControl
+  (`SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS` e
+  `SMTP_FROM`). Essa escolha e operacional e pode ser substituida depois por
+  outro provedor sem mudar o contrato de convite.
 - TI opera este fluxo inicialmente. Delegacao para gestores depende de uma
   policy propria, sem permissao para elevar `ADMIN` ou alterar administradores.
 - cadastro publico nao deve permanecer habilitado em producao junto deste
@@ -141,6 +148,11 @@ O fluxo inicial oficial para novas contas e convite administrativo.
   criacao; nenhuma identidade e mesclada automaticamente.
 - convite para email pessoal mostra finalidade de uso do endereco e link para
   politica de privacidade. Isso nao substitui a base legal aplicavel.
+
+Aplicacoes com papeis proprios continuam validadas pelo catalogo declarado em
+codigo. Aplicacoes administrativas ou redirecionadas que ainda nao tenham
+catalogo proprio usam os papeis contextuais padrao `MEMBER` e `MANAGER`; isso
+nao concede `ADMIN` global nem substitui permissoes internas do modulo.
 
 MFA para `ADMIN` e requisito futuro antes da ampliacao do uso administrativo,
 mas nao esta implementado neste momento.
@@ -215,7 +227,7 @@ de permissoes. O catalogo inicial recomendado e:
 | Modulo | Papeis |
 | --- | --- |
 | Jornada | `MEMBER`, `MANAGER` |
-| Focall | `REQUESTER`, `AGENT`, `MANAGER` |
+| Tickets | `REQUESTER`, `AGENT`, `MANAGER` |
 | QuickForms | `VIEWER`, `AUTHOR`, `PUBLISHER`, `MANAGER` |
 
 Papeis customizados por administrador ficam fora do escopo ate existir uma
@@ -260,9 +272,9 @@ Precisamos separar, sem confundir nome tecnico com nome de produto:
 Exemplo:
 
 - a mesma pessoa pode ter acesso ao app `JORNADA`
-- essa mesma pessoa pode ter acesso ao modulo Focall (`HELP_HUB` como codigo tecnico)
+- essa mesma pessoa pode ter acesso ao modulo Tickets (`TICKETS` como codigo do aplicativo)
 - no `JORNADA`, ela pode ser apenas `USER`
-- no Focall, ela pode ser `AGENT`, `MANAGER` ou `ADMIN`
+- no Tickets, ela pode ser `AGENT`, `MANAGER` ou `ADMIN`
 - a visao dentro de cada app continua dependente do contexto e das permissoes do proprio dominio
 
 Regra arquitetural:
@@ -295,7 +307,7 @@ Escopo atual:
 
 ## Atendimento e ownership
 
-No dominio de atendimento, abrir o modulo Focall nao significa poder atuar em qualquer caso.
+No dominio de atendimento, abrir o modulo Tickets nao significa poder atuar em qualquer caso.
 
 Regra operacional desejada:
 

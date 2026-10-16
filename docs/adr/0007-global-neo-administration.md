@@ -16,7 +16,7 @@ O Neo possui uma experiencia global de administracao em `/administracao`,
 protegida exclusivamente pela role global `ADMIN`.
 
 - A experiencia usa o mesmo shell e design system do Neo, mas uma lateral
-  propria, sem itens do Jornada, Focall ou QuickForms.
+  propria, sem itens do Jornada, Tickets ou QuickForms.
 - `/administracao/aplicativos` e a fonte de manutencao do catalogo de
   modulos nativos e redirecionamentos externos.
 - `/administracao/usuarios` usa os endpoints centrais de `auth` para listar
@@ -31,4 +31,4 @@ protegida exclusivamente pela role global `ADMIN`.
 Administracao vira um quarto contexto de interface, nao um quarto modulo de
 negocio. Novas configuracoes globais, como politicas de acesso e auditoria,
 entram nesta area. Configuracoes de dominio continuam nos proprios modulos:
-regras de atendimento no Focall e fontes/formularios no QuickForms.
+regras de atendimento no Tickets e fontes/formularios no QuickForms.

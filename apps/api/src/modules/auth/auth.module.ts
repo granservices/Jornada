@@ -13,6 +13,7 @@ import { AuthTokenService } from './services/auth-token.service';
 import { AuthSsoTicketService } from './services/auth-sso-ticket.service';
 import { PasswordHasherService } from './services/password-hasher.service';
 import { AuthUserProvisioningService } from './services/auth-user-provisioning.service';
+import { TransactionalEmailService } from './services/transactional-email.service';
 
 @Module({
   imports: [AuditModule, DomainEventsModule],
@@ -29,6 +30,7 @@ import { AuthUserProvisioningService } from './services/auth-user-provisioning.s
     JwtAccessTokenService,
     JwtAuthGuard,
     PasswordHasherService,
+    TransactionalEmailService,
   ],
   exports: [AuthService, JwtAccessTokenService, JwtAuthGuard],
 })

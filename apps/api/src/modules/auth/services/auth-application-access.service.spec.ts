@@ -100,10 +100,10 @@ describe('AuthApplicationAccessService', () => {
     });
   });
 
-  it('grants admin access to Jornada, Focall and QuickForms', async () => {
+  it('grants admin access to Jornada, Tickets and QuickForms', async () => {
     prisma.application.findMany.mockResolvedValue([
       { id: 'app-jornada', code: 'JORNADA' },
-      { id: 'app-focall', code: 'HELP_HUB' },
+      { id: 'app-Tickets', code: 'TICKETS' },
       { id: 'app-quick-forms', code: 'QUICK_FORMS' },
     ]);
 
@@ -115,12 +115,12 @@ describe('AuthApplicationAccessService', () => {
         where: {
           userId_applicationId: {
             userId: 'admin-1',
-            applicationId: 'app-focall',
+            applicationId: 'app-Tickets',
           },
         },
         create: expect.objectContaining({
           userId: 'admin-1',
-          applicationId: 'app-focall',
+          applicationId: 'app-Tickets',
           isDefault: false,
         }),
       }),
@@ -130,7 +130,7 @@ describe('AuthApplicationAccessService', () => {
         where: {
           userId_applicationId_roleCode: {
             userId: 'admin-1',
-            applicationId: 'app-focall',
+            applicationId: 'app-Tickets',
             roleCode: 'MANAGER',
           },
         },
@@ -138,15 +138,15 @@ describe('AuthApplicationAccessService', () => {
     );
   });
 
-  it('seeds Focall as a native module while preserving its stable application code', async () => {
+  it('seeds Tickets as a native module while preserving its stable application code', async () => {
     await service.ensureCatalogSeeded();
 
     expect(prisma.application.upsert).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { code: 'HELP_HUB' },
+        where: { code: 'TICKETS' },
         create: expect.objectContaining({
-          code: 'HELP_HUB',
-          name: 'Focall',
+          code: 'TICKETS',
+          name: 'Tickets',
           entryKind: ApplicationEntryKind.NATIVE,
           entryPath: '/atendimentos',
         }),

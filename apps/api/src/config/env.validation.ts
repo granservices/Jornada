@@ -36,6 +36,15 @@ export const envValidationSchema = Joi.object({
     .integer()
     .positive()
     .default(30),
+  JORNADA_PUBLIC_BASE_URL: Joi.string()
+    .uri({ scheme: ['http', 'https'] })
+    .default('http://localhost:3006'),
+  SMTP_HOST: Joi.string().hostname().optional(),
+  SMTP_PORT: Joi.number().port().default(465),
+  SMTP_SECURE: Joi.boolean().optional(),
+  SMTP_USER: Joi.string().optional(),
+  SMTP_PASS: Joi.string().optional(),
+  SMTP_FROM: Joi.string().optional(),
   AUTH_PUBLIC_REGISTRATION_ENABLED: Joi.boolean().default(false),
   AUTH_SSO_TICKET_EXPIRES_IN_SECONDS: Joi.number()
     .integer()

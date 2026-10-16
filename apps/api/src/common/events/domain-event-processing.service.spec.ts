@@ -9,7 +9,7 @@ describe('DomainEventProcessingService', () => {
           eventType: 'forms.request.completed',
           aggregateType: 'FormRequest',
           aggregateId: 'request-1',
-          payload: { sourceApplication: 'HELP_HUB' },
+          payload: { sourceApplication: 'TICKETS' },
           correlationId: null,
           status: 'PENDING',
         }),

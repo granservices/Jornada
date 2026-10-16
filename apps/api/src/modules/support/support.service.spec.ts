@@ -1159,11 +1159,11 @@ describe('SupportService', () => {
     );
   });
 
-  it('filters support queues on the backend for unassigned active cases', async () => {
+  it('filters support queues on the backend for cases waiting to be assigned', async () => {
     prisma.supportCase.findMany.mockResolvedValue([baseCase]);
 
     await service.listCases(supportUser, {
-      queue: 'nao-atribuidos',
+      queue: 'para-assumir',
     });
 
     expect(prisma.supportCase.findMany).toHaveBeenCalledWith(
@@ -1205,7 +1205,7 @@ describe('SupportService', () => {
     );
   });
 
-  it('defaults support listing to the team backlog when no queue filter is provided', async () => {
+  it('defaults support listing to cases waiting to be assigned when no queue filter is provided', async () => {
     prisma.supportCase.findMany.mockResolvedValue([baseCase]);
 
     await service.listCases(supportUser, {});

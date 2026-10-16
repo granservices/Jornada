@@ -29,7 +29,16 @@ async function bootstrap() {
   );
   app.useLogger(app.get(Logger));
   const redisIoAdapter = new RedisIoAdapter(app);
-  await redisIoAdapter.connectToRedis();
+  try {
+    await redisIoAdapter.connectToRedis();
+  } catch (error) {
+    app
+      .get(Logger)
+      .warn(
+        { err: error },
+        'Redis indisponivel; realtime local iniciado sem adapter distribuido.',
+      );
+  }
   app.useWebSocketAdapter(redisIoAdapter);
   app.useGlobalPipes(
     new ValidationPipe({
