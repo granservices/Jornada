@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 
 const sourcePath = resolve(
   process.cwd(),
-  'src/modules/Tickets/support-catalog-admin-page.tsx',
+  'src/modules/tickets/support-catalog-admin-page.tsx',
 );
 const source = readFileSync(sourcePath, 'utf8');
 const deferredUpdaterPattern =
