@@ -43,6 +43,7 @@
 - [ ] Acoplar auditoria na mesma transacao em todas as acoes administrativas criticas
 - [x] Definir estrategia de testes e cobertura
 - [x] Preparar `docker compose` final com Postgres e Redis
+- [x] Containerizar o frontend Neo com Nginx e proxy interno para API e WebSocket
 
 ## Database and infra
 

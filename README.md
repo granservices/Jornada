@@ -63,8 +63,14 @@ Com a infra local no ar, a API usa o Redis em `REDIS_URL` para processar os webh
 
 O `docker-compose.yml` da raiz prepara o ambiente local com:
 
+- `neo`
 - `api`
 - `postgres`
 - `redis`
 
-`apps/neo` roda em `http://localhost:3006`. O Hub fica em `http://localhost:3006/aplicativos`; Jornada, Tickets e QuickForms usam, respectivamente, `/inbox`, `/atendimentos` e `/formularios` no mesmo frontend autenticado.
+O Compose tambem publica o frontend Neo em `http://localhost:3006` e encaminha
+`/api` e `/socket.io` para a API. O Hub fica em
+`http://localhost:3006/aplicativos`; Jornada, Tickets e QuickForms usam,
+respectivamente, `/inbox`, `/atendimentos` e `/formularios` no mesmo frontend
+autenticado. O servidor nao precisa ter Node.js instalado para executar o
+stack Dockerizado.

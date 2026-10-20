@@ -7,4 +7,9 @@ data
 Dockerfile*
 docker-compose*.yml
 README.md
+.env
+.env.*
+!.env.example
+!apps/api/.env.example
+!apps/neo/.env.example
 

@@ -23,6 +23,7 @@ Etapa atual dessa separacao:
 - o shell operacional mostra navegacao `TICKETS`
 - `apps/neo` redireciona rotas antigas de atendimento para o Tickets e de formularios para o QuickForms
 - `apps/api` continua compartilhado por enquanto
+- o runtime publicado do `apps/neo` e servido por Nginx em container, com `/api` e `/socket.io` encaminhados internamente para `apps/api`
 - Tickets e QuickForms usam rotas lazy para preservar entrypoint leve
 - QuickForms possui modulo proprio para biblioteca, fontes e builder; `/aplicativos` e a entrada neutra de modulos dentro do Jornada
 

@@ -49,6 +49,24 @@ services:
       retries: 5
       start_period: 25s
 
+  neo:
+    build:
+      context: .
+      dockerfile: apps/neo/Dockerfile
+    container_name: jornada-neo
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "3006:80"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
 volumes:
   postgres_data:
   redis_data:
